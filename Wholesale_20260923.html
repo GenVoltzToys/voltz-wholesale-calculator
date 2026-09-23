@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Voltz Toys - 批发利润测算与综合调价系统</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-subtle: #334155;
+      --border: #475569;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --accent: #a855f7;
+      --emerald: #10b981;
+      --indigo: #6366f1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 1.5rem;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+    }
+
+    .wrapper {
+      max-width: 1080px;
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title-row h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .rev-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--primary);
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .header-left p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: #0f172a;
+      padding: 0.3rem;
+      border-radius: 10px;
+      gap: 0.35rem;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.55rem 1rem;
+      border-radius: 7px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--card-subtle);
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .tab-content {
+      display: none;
+      margin-top: 1.25rem;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .cost-ledger {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .ledger-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .ledger-item .label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .ledger-item .val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .ledger-item.cogs .val {
+      color: var(--primary);
+    }
+
+    .ledger-item.total .val {
+      color: #f87171;
+    }
+
+    .field-group {
+      margin-bottom: 1.15rem;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.4rem;
+    }
+
+    label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #cbd5e1;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 130px;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .num-input-wrap {
+      position: relative;
+    }
+
+    input[type="number"], input[type="text"], select {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 1.75rem 0.5rem 0.75rem;
+      color: #fff;
+      font-size: 0.92rem;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    input[type="text"], select {
+      text-align: left;
+      padding-right: 0.75rem;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid var(--primary);
+      border-color: transparent;
+    }
+
+    .num-input-wrap .unit {
+      position: absolute;
+      right: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .kpi-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+    }
+
+    .kpi-card.margin::before { background: var(--success); }
+    .kpi-card.rebate::before { background: var(--accent); }
+    .kpi-card.comm-agent::before { background: var(--primary); }
+    .kpi-card.comm-self::before { background: var(--indigo); }
+    .kpi-card.income::before { background: var(--emerald); }
+    .kpi-card.highlight::before { background: #f43f5e; }
+
+    .kpi-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+
+    .kpi-value {
+      font-size: 1.7rem;
+      font-weight: 800;
+    }
+
+    .kpi-subtext {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+      line-height: 1.4;
+    }
+
+    .breakdown-box {
+      margin-top: 1.25rem;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .breakdown-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .breakdown-row span:last-child {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    /* 4段收益卡片样式 */
+    .earning-quad-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .quad-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .quad-title {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .quad-val {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    /* TAB 2 表格 */
+    .catalog-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .control-item label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .search-input {
+      max-width: 200px;
+    }
+
+    .table-container {
+      max-height: 520px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0f172a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+
+    th {
+      background: #1e293b;
+      position: sticky;
+      top: 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      z-index: 1;
+    }
+
+    td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid rgba(71, 85, 105, 0.4);
+      color: #cbd5e1;
+    }
+
+    tr:hover td {
+      background: rgba(56, 189, 248, 0.05);
+      color: #fff;
+    }
+
+    td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tag-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .tag-badge.ride-on { background: rgba(56, 189, 248, 0.15); color: var(--primary); }
+    .tag-badge.push-car { background: rgba(168, 85, 247, 0.15); color: var(--accent); }
+
+    .summary-bar {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .btn {
+      background: var(--card-subtle);
+      border: 1px solid var(--border);
+      color: #fff;
+      padding: 0.55rem 0.9rem;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn:hover { background: var(--border); }
+    .btn-primary { background: #0284c7; border-color: var(--primary); }
+    .btn-primary:hover { background: #0369a1; }
+
+    .btn-row {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .eval-section {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .eval-section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .eval-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .footer-rev-bar {
+      margin-top: 2rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .footer-rev-bar code {
+      background: #0f172a;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: var(--primary);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+  <!-- 头部与版本号展示 (YYMMDDHHMM) -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-title-row">
+        <h1>Voltz Toys 批发与综合测评系统</h1>
+        <span class="rev-badge">REV: 2609231310</span>
+      </div>
+      <p>Wholesale Pricing, Catalog & Dual-Role Sales Commission System</p>
+    </div>
+    <div class="nav-tabs">
+      <button class="tab-btn" onclick="switchTab('calcTab', this)">批发利润测算</button>
+      <button class="tab-btn" onclick="switchTab('catalogTab', this)">现行价格表 (67款)</button>
+      <button class="tab-btn active" onclick="switchTab('salesEvalTab', this)">业务员兼零售测评 ⭐</button>
+    </div>
+  </div>
+
+  <!-- TAB 1: 批发利润测算器 -->
+  <div id="calcTab" class="tab-content">
+    <div class="cost-ledger">
+      <div class="ledger-item">
+        <span class="label">采购成本</span>
+        <span class="val">35.0%</span>
+      </div>
+      <div class="ledger-item">
+        <span class="label">海运 (9.0%) + 关税 (2.8%)</span>
+        <span class="val">11.8%</span>
+      </div>
+      <div class="ledger-item">
+        <span class="label">其他费用 (输入项)</span>
+        <span class="val" id="ledgerOtherVal">0.0%</span>
+      </div>
+      <div class="ledger-item cogs">
+        <span class="label">落地成本 (COGS)</span>
+        <span class="val" id="ledgerCogsVal">46.8%</span>
+      </div>
+      <div class="ledger-item">
+        <span class="label">固定费用分摊</span>
+        <span class="val">10.0%</span>
+      </div>
+      <div class="ledger-item total">
+        <span class="label">基准总成本</span>
+        <span class="val" id="ledgerTotalBaseVal">56.8%</span>
+      </div>
+    </div>
+
+    <!-- 其他费用 (占 MSRP %) -->
+    <div class="field-group" style="background: rgba(15, 23, 42, 0.4); padding: 0.85rem 1rem; border-radius: 8px; border: 1px solid var(--border);">
+      <div class="label-row">
+        <label for="otherCostRate"><strong style="color: var(--primary);">• 其他费用（占 MSRP %）—— 合计到落地成本 COGS</strong></label>
+        <span id="otherCostRateVal" style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">0.0%</span>
+      </div>
+      <div class="input-row">
+        <input type="range" id="otherCostRateSlider" min="0" max="20" step="0.1" value="0.0">
+        <div class="num-input-wrap">
+          <input type="number" id="otherCostRate" min="0" max="50" step="0.1" value="0.0">
+          <span class="unit">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 输入 1 -->
+    <div class="field-group">
+      <div class="label-row">
+        <label for="custPrice">1. 客户买入价格 (占 MSRP %)</label>
+        <span id="custPriceVal" style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">70.0%</span>
+      </div>
+      <div class="input-row">
+        <input type="range" id="custPriceSlider" min="50" max="100" step="0.5" value="70.0">
+        <div class="num-input-wrap">
+          <input type="number" id="custPrice" min="0" max="100" step="0.1" value="70.0">
+          <span class="unit">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 输入 2 -->
+    <div class="field-group">
+      <div class="label-row">
+        <label for="rebateRate">2. 客户返点基础比率 (占采购价 %)</label>
+        <span id="rebateRateVal" style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">5.0%</span>
+      </div>
+      <div class="input-row">
+        <input type="range" id="rebateRateSlider" min="0" max="25" step="0.5" value="5.0">
+        <div class="num-input-wrap">
+          <input type="number" id="rebateRate" min="0" max="100" step="0.1" value="5.0">
+          <span class="unit">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 输入 3 -->
+    <div class="field-group">
+      <div class="label-row">
+        <label for="rebateFactor">3. 返点折算系数 / Factor (%)</label>
+        <span id="rebateFactorVal" style="font-size: 0.85rem; color: var(--accent); font-weight: 600;">100.0%</span>
+      </div>
+      <div class="input-row">
+        <input type="range" id="rebateFactorSlider" min="0" max="200" step="5" value="100">
+        <div class="num-input-wrap">
+          <input type="number" id="rebateFactor" min="0" max="500" step="1" value="100">
+          <span class="unit">%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-grid">
+      <div class="kpi-card margin" id="marginCard">
+        <div class="kpi-title">Voltz Toys 最终净利率</div>
+        <div class="kpi-value" id="voltzMargin">--</div>
+        <div class="kpi-subtext" id="marginFormulaDesc">买价 − 复合返点 − 动态总基准成本</div>
+      </div>
+
+      <div class="kpi-card rebate">
+        <div class="kpi-title">返点占客户买入价比例</div>
+        <div class="kpi-value" id="rebateVsCustomer" style="color: var(--accent);">--</div>
+        <div class="kpi-subtext">直接对应输入 2 (采购价基准比率)</div>
+      </div>
+    </div>
+
+    <div class="breakdown-box">
+      <div class="breakdown-row">
+        <span>当前落地成本 COGS (采购35% + 海运9% + 关税2.8% + 其他)：</span>
+        <span id="auditCogsDetail">46.80% of MSRP</span>
+      </div>
+      <div class="breakdown-row">
+        <span>复合返点换算占 MSRP 扣减比例 [买价 × (输入2 × 输入3)]：</span>
+        <span id="auditCompoundRebate">--</span>
+      </div>
+      <div class="breakdown-row">
+        <span>客户基础返点率 (直接作为采购价占比)：</span>
+        <span id="auditBaseRebate">--</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="copyQuote()">复制此结构报价方案</button>
+      <button class="btn btn-primary" onclick="syncRateToCatalog()">以此买价比例同步到价格表 (TAB 2)</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: 现行零售价格库 (向上进位至近似5) -->
+  <div id="catalogTab" class="tab-content">
+    <div class="catalog-bar">
+      <div class="control-item">
+        <label for="priceMultiplier"><strong>调价比例 (Multiplier)：</strong></label>
+        <div class="num-input-wrap" style="width: 110px;">
+          <input type="number" id="priceMultiplier" value="75.0" step="0.5" min="1" max="200" oninput="renderTable()">
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <div class="control-item">
+        <label for="typeFilter">品类：</label>
+        <select id="typeFilter" onchange="renderTable()" style="width: 130px;">
+          <option value="ALL">全部品类</option>
+          <option value="Ride On">Ride On (童车)</option>
+          <option value="Push Car">Push Car (手推车)</option>
+        </select>
+      </div>
+
+      <div class="control-item">
+        <input type="text" id="searchBox" class="search-input" placeholder="输入货号搜索..." oninput="renderTable()">
+      </div>
+
+      <div class="control-item">
+        <button class="btn" onclick="exportCSV()">导出 CSV 表格</button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 60px;">序号</th>
+            <th>Item (货号)</th>
+            <th>品类 (Type)</th>
+            <th style="text-align: right;">现行零售原价 (MSRP)</th>
+            <th style="text-align: right;">调整比例</th>
+            <th style="text-align: right; color: var(--primary);">调整后价格 (向上进位至5)</th>
+            <th style="text-align: right;">实际折扣率</th>
+          </tr>
+        </thead>
+        <tbody id="catalogTbody"></tbody>
+      </table>
+    </div>
+
+    <div class="summary-bar">
+      <span id="filteredCount">共展示 67 款产品</span>
+      <span>调整后货品总均价：<strong id="avgAdjustedPrice" style="color: var(--primary);">$0.00</strong></span>
+    </div>
+  </div>
+
+  <!-- TAB 3: 业务员兼零售商测评系统 (已增加两大指标与4部分盈利拆解) -->
+  <div id="salesEvalTab" class="tab-content active">
+    <div class="eval-section">
+      <div class="eval-section-title">⚙️ 提成与退点比例设定（独立输入）</div>
+      
+      <div class="eval-grid">
+        <div class="field-group">
+          <div class="label-row">
+            <label for="agentCommRate"><strong>1. 作为销售代理对外销售提成（占毛利 %）</strong></label>
+            <span id="agentCommRateVal" style="color: var(--primary); font-weight:700;">15.0%</span>
+          </div>
+          <div class="input-row">
+            <input type="range" id="agentCommRateSlider" min="0" max="50" step="1" value="15">
+            <div class="num-input-wrap">
+              <input type="number" id="agentCommRate" min="0" max="100" step="1" value="15">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">外部客户批发订单贡献毛利的提成比例</p>
+        </div>
+
+        <div class="field-group">
+          <div class="label-row">
+            <label for="selfCommRate"><strong>2. 自己作为零售商自采提成（占毛利 %）</strong></label>
+            <span id="selfCommRateVal" style="color: var(--indigo); font-weight:700;">10.0%</span>
+          </div>
+          <div class="input-row">
+            <input type="range" id="selfCommRateSlider" min="0" max="50" step="1" value="10">
+            <div class="num-input-wrap">
+              <input type="number" id="selfCommRate" min="0" max="100" step="1" value="10">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">自己门店进货订单贡献毛利的提成比例</p>
+        </div>
+
+        <div class="field-group">
+          <div class="label-row">
+            <label for="customRebateRate"><strong>3. 自身零售商退点比例（占采购额 %）</strong></label>
+            <span id="customRebateRateVal" style="color: var(--accent); font-weight:700;">5.0%</span>
+          </div>
+          <div class="input-row">
+            <input type="range" id="customRebateRateSlider" min="0" max="15" step="0.5" value="5.0">
+            <div class="num-input-wrap">
+              <input type="number" id="customRebateRate" min="0" max="100" step="0.1" value="5.0">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">依此比例计算自采退点，不再固定为 5%</p>
+        </div>
+      </div>
+
+      <div class="eval-grid" style="margin-top: 0.8rem; border-top: 1px dashed var(--border); padding-top: 1rem;">
+        <div class="field-group">
+          <div class="label-row">
+            <label for="evalWholesaleRate">统一批发执行价（占 MSRP %）</label>
+            <span id="evalWholesaleRateVal" style="color: #fff; font-weight:700;">75.0%</span>
+          </div>
+          <div class="input-row">
+            <input type="range" id="evalWholesaleRateSlider" min="50" max="90" step="1" value="75">
+            <div class="num-input-wrap">
+              <input type="number" id="evalWholesaleRate" min="50" max="100" step="1" value="75">
+              <span class="unit">%</span>
+            </div>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;" id="grossMarginNote">毛利率动态测算中...</p>
+        </div>
+
+        <div class="field-group">
+          <label for="selfPurchaseVol">自己作为零售商的年进货额 ($ / Year)</label>
+          <div class="num-input-wrap" style="margin-top: 0.35rem;">
+            <input type="number" id="selfPurchaseVol" value="15000" step="1000" min="0">
+            <span class="unit">$</span>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">按上述输入的退点比例计算现金退点</p>
+        </div>
+
+        <div class="field-group">
+          <label for="otherWholesaleVol">作为代理的外部客户批发业绩 ($ / Year)</label>
+          <div class="num-input-wrap" style="margin-top: 0.35rem;">
+            <input type="number" id="otherWholesaleVol" value="50000" step="5000" min="0">
+            <span class="unit">$</span>
+          </div>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">外部客户批发订单，按销售代理提成率结算</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 顶部重点指标卡片 -->
+    <div class="results-grid">
+      <!-- 指标 1：该个体整体能赚的全部利润总和 -->
+      <div class="kpi-card income">
+        <div class="kpi-title">该业务员整体能赚的钱 (4部分合计)</div>
+        <div class="kpi-value" id="totalPersonalIncome" style="color: var(--emerald);">$0.00</div>
+        <div class="kpi-subtext">外部提成 + 自采提成 + 批发退点 + 自采按MSRP售出毛利</div>
+      </div>
+
+      <!-- 指标 2：该业务员合计提成比例 (新增要求) -->
+      <div class="kpi-card highlight">
+        <div class="kpi-title">业务员自采合计提成比例</div>
+        <div class="kpi-value" id="combinedSelfRate" style="color: #f43f5e;">0.00%</div>
+        <div class="kpi-subtext">(自采进货提成 + 批发退点) ÷ 自采总进货额</div>
+      </div>
+
+      <!-- 批发端所得总收益 (提成+退点) -->
+      <div class="kpi-card comm-agent">
+        <div class="kpi-title">批发端渠道所得总收益</div>
+        <div class="kpi-value" id="wholesaleEarningSubtotal" style="color: var(--primary);">$0.00</div>
+        <div class="kpi-subtext">外部代理提成 + 自采提成 + 采购退点</div>
+      </div>
+
+      <!-- 公司净利润留存 -->
+      <div class="kpi-card margin">
+        <div class="kpi-title">公司最终净留存利润</div>
+        <div class="kpi-value" id="companyNetProfit" style="color: var(--success);">$0.00</div>
+        <div class="kpi-subtext" id="companyNetPct">扣除全部提成、退点及固定成本</div>
+      </div>
+    </div>
+
+    <!-- 核心功能更新：整体能赚的钱 分成4部分展示 -->
+    <div class="eval-section" style="margin-top: 1.5rem; background: rgba(15, 23, 42, 0.4);">
+      <div class="eval-section-title" style="color: #fff;">
+        💰 业务员整体总收益透视拆解（4 维资金来源看板）
+      </div>
+      <div class="earning-quad-grid">
+        <!-- 第 1 部分 -->
+        <div class="quad-card" style="border-top: 3px solid var(--primary);">
+          <div class="quad-title">① 其他客人的批发提成</div>
+          <div class="quad-val" id="quadPart1" style="color: var(--primary);">$0.00</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;" id="quadPart1Sub">外部订单毛利 × 代理提成率</div>
+        </div>
+
+        <!-- 第 2 部分 -->
+        <div class="quad-card" style="border-top: 3px solid var(--indigo);">
+          <div class="quad-title">② 自己的批发提成</div>
+          <div class="quad-val" id="quadPart2" style="color: var(--indigo);">$0.00</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;" id="quadPart2Sub">自采订单毛利 × 自采提成率</div>
+        </div>
+
+        <!-- 第 3 部分 -->
+        <div class="quad-card" style="border-top: 3px solid var(--accent);">
+          <div class="quad-title">③ 自己的批发退点</div>
+          <div class="quad-val" id="quadPart3" style="color: var(--accent);">$0.00</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;" id="quadPart3Sub">年进货额 × 输入退点率</div>
+        </div>
+
+        <!-- 第 4 部分 (新增要求) -->
+        <div class="quad-card" style="border-top: 3px solid var(--emerald);">
+          <div class="quad-title">④ 自采货物按 MSRP 售出毛利</div>
+          <div class="quad-val" id="quadPart4" style="color: var(--emerald);">$0.00</div>
+          <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;" id="quadPart4Sub">进货以 100% MSRP 全价售出利润</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 详细财务清算明细账 -->
+    <div class="breakdown-box" style="margin-top: 1.25rem; font-size: 0.85rem;">
+      <div style="font-weight: 700; color: #fff; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; margin-bottom: 0.3rem;">
+        📊 综合财务收益与成本穿透清单 (毛利口径包含固定成本分摊)
+      </div>
+      <div class="breakdown-row">
+        <span>全盘总批发货值 (自采 + 外部)：</span>
+        <span id="bkTotalWholesaleVol">$0.00</span>
+      </div>
+      <div class="breakdown-row" style="color: var(--primary);">
+        <span>全盘毛利润总池 (仅扣除动态 COGS，保留固定成本)：</span>
+        <span id="bkGrossProfitPool">$0.00</span>
+      </div>
+      <div class="breakdown-row">
+        <span>• 外部代理订单贡献毛利 及 提成：</span>
+        <span id="bkOtherDetail">$0.00 (提成: $0.00)</span>
+      </div>
+      <div class="breakdown-row">
+        <span>• 自采零售订单贡献毛利 及 提成：</span>
+        <span id="bkSelfDetail">$0.00 (提成: $0.00)</span>
+      </div>
+      <div class="breakdown-row" style="color: var(--accent);">
+        <span>• 自身作为零售商享有的退点支出 (基于输入比例)：</span>
+        <span id="bkRebateDetail">-$0.00</span>
+      </div>
+      <div class="breakdown-row" style="color: #f87171;">
+        <span>• 公司固定运营成本分摊 (10% MSRP 对应金额)：</span>
+        <span id="bkFixedOverheadDetail">-$0.00</span>
+      </div>
+      <div class="breakdown-row" style="border-top: 1px dashed var(--border); padding-top: 0.4rem; font-weight:700;">
+        <span>★ 公司扣除双项提成、退点与固定分摊后的纯利润：</span>
+        <span id="bkFinalCompanyMargin" style="color: var(--success);">$0.00</span>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" onclick="copySalesEval()">复制该个体综合结算报告</button>
+      <button class="btn" onclick="resetEvalDefaults()">恢复默认测评参数</button>
+    </div>
+  </div>
+
+  <!-- 底部修订版本管理栏 -->
+  <div class="footer-rev-bar">
+    <div>
+      当前系统构建版本：<code>REV: 2609231310</code> (YYMMDDHHMM)
+    </div>
+    <div>
+      <button class="btn" onclick="downloadRevHistory()">📥 下载修订历史 (Rev History .txt)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ================= 版本修订历史配置 (YYMMDDHHMM) =================
+  const CURRENT_REV = "2609231310";
+
+  const REV_HISTORY_TEXT = 
+`================================================================================
+VOLTZ TOYS WHOLESALE PRICING & EVALUATION SYSTEM - REVISION HISTORY
+Current Version: REV ${CURRENT_REV}
+Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 10)
+================================================================================
+
+[REV: 2609231310] - 2026-09-23 13:10
+- TAB 3 功能升级：
+  1. 新增指标：该业务员自采合计提成比例 = (自采提成 + 自采退点) ÷ 自采总进货额。
+  2. 新增看板：该业务员整体能赚的钱完整拆解为 4 维收益看板：
+     ① 其他客人的批发提成
+     ② 自己的批发提成
+     ③ 自己的批发退点
+     ④ 自己进货能卖出去的毛利（按 100% MSRP 零售价售出毛利）。
+- 保持海运 9.0%、关税 2.8%、其他费用动态录入的落地成本 COGS 体系。
+
+[REV: 2609221744] - 2026-09-22 17:44
+- UI展示更新：在系统主界面标题与底部增加 REV: 2609221744 标识。
+- 新增功能：添加可下载的文本修订历史 (Rev History .txt) 导出功能。
+- 海运与成本更新：海运费更新为 9.0%，关税保持 2.8%，采购成本 35.0%。
+- 新增“其他费用”输入参数：支持以 MSRP % 形式计入落地成本 (COGS = 35% + 9% + 2.8% + 其他%)。
+- 全系统联动：TAB 1 净利率与 TAB 3 提成毛利基数均自动对齐最新动态 COGS。
+
+[REV: 2609221715] - 2026-09-22 17:15
+- 客户返点基准重构：TAB 1 中“输入 2 客户返点基础比率”从占 MSRP % 改为“占客户采购价 %”。
+- 公式重构：复合返点扣减额转换为采购价 × (输入2 × 输入3)，结果展示直接对齐输入2。
+
+[REV: 2609221650] - 2026-09-22 16:50
+- 提成参数拆分：将 TAB 3 的固定毛利提成拆分为两个独立参数（代理外部销售提成与自采进货提成）。
+- 退点输入自定义：增加零售退点独立 input 百分比输入，支持输入计算而非默认固定 5%。
+
+[REV: 2609221620] - 2026-09-22 16:20
+- 财务口径修正：业务员提成毛利润基数修正为包含 10% 的固定成本分摊（仅扣除 COGS 落地成本）。
+
+[REV: 2609221545] - 2026-09-22 15:45
+- 新增 TAB 3：业务员兼零售商双重身份综合收益测评系统。
+- 新增 TAB 2 价格向上进位功能：现行 67 款零售商品价格根据调价比例计算后，向上进位至近似 5。
+
+[REV: 2609221430] - 2026-09-22 14:30
+- 系统初始化：构建单文件 Web 应用，集成 67 款现行商品零售数据与 TAB 1 批发利润测算核心模型。
+================================================================================`;
+
+  function downloadRevHistory() {
+    const blob = new Blob([REV_HISTORY_TEXT], { type: 'text/plain;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Voltz_Toys_Rev_History_${CURRENT_REV}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // 67 款商品后台数据集
+  const rawCatalogData = [
+    { item: "81919C", type: "Ride On", price: 59.99 },
+    { item: "81658", type: "Ride On", price: 69.99 },
+    { item: "88602T", type: "Push Car", price: 79.99 },
+    { item: "85700", type: "Push Car", price: 119.99 },
+    { item: "80996T", type: "Push Car", price: 119.99 },
+    { item: "83600", type: "Push Car", price: 119.99 },
+    { item: "83500", type: "Push Car", price: 119.99 },
+    { item: "80058", type: "Ride On", price: 249.99 },
+    { item: "81155J", type: "Ride On", price: 105.59 },
+    { item: "82055", type: "Ride On", price: 439.99 },
+    { item: "82032", type: "Ride On", price: 439.99 },
+    { item: "82098", type: "Ride On", price: 949.99 },
+    { item: "80732", type: "Ride On", price: 599.99 },
+    { item: "88889", type: "Ride On", price: 349.99 },
+    { item: "80011", type: "Ride On", price: 199.99 },
+    { item: "82089", type: "Ride On", price: 849.99 },
+    { item: "81919", type: "Ride On", price: 299.99 },
+    { item: "8CA01", type: "Ride On", price: 849.99 },
+    { item: "82328", type: "Ride On", price: 349.99 },
+    { item: "88638", type: "Ride On", price: 449.99 },
+    { item: "8CB02", type: "Ride On", price: 449.99 },
+    { item: "80005", type: "Ride On", price: 549.99 },
+    { item: "81928HS", type: "Ride On", price: 899.99 },
+    { item: "81818", type: "Ride On", price: 389.99 },
+    { item: "82368", type: "Ride On", price: 239.99 },
+    { item: "82719", type: "Ride On", price: 619.99 },
+    { item: "81928", type: "Ride On", price: 799.99 },
+    { item: "83589", type: "Ride On", price: 519.99 },
+    { item: "83518", type: "Ride On", price: 259.99 },
+    { item: "80568", type: "Ride On", price: 189.99 },
+    { item: "83658", type: "Ride On", price: 289.99 },
+    { item: "80578", type: "Ride On", price: 189.99 },
+    { item: "82078", type: "Push Car", price: 99.99 },
+    { item: "83568", type: "Ride On", price: 499.99 },
+    { item: "82338", type: "Ride On", price: 479.99 },
+    { item: "82900", type: "Ride On", price: 639.99 },
+    { item: "80016", type: "Ride On", price: 249.99 },
+    { item: "80017", type: "Ride On", price: 249.99 },
+    { item: "88888", type: "Ride On", price: 349.99 },
+    { item: "82388", type: "Ride On", price: 329.99 },
+    { item: "80033", type: "Ride On", price: 329.99 },
+    { item: "82528", type: "Ride On", price: 299.99 },
+    { item: "82928", type: "Ride On", price: 899.00 },
+    { item: "86388", type: "Ride On", price: 289.99 },
+    { item: "82718", type: "Ride On", price: 489.99 },
+    { item: "83558", type: "Ride On", price: 469.99 },
+    { item: "80066", type: "Ride On", price: 449.99 },
+    { item: "80036", type: "Ride On", price: 449.99 },
+    { item: "86988", type: "Ride On", price: 659.99 },
+    { item: "82539", type: "Ride On", price: 579.99 },
+    { item: "81968", type: "Ride On", price: 439.99 },
+    { item: "80699", type: "Ride On", price: 369.97 },
+    { item: "80688", type: "Ride On", price: 449.99 },
+    { item: "80996", type: "Push Car", price: 69.99 },
+    { item: "81718", type: "Ride On", price: 349.99 },
+    { item: "82319", type: "Ride On", price: 319.97 },
+    { item: "82428", type: "Ride On", price: 98.97 },
+    { item: "88618", type: "Ride On", price: 499.99 },
+    { item: "88628", type: "Ride On", price: 499.99 },
+    { item: "88638", type: "Ride On", price: 439.99 },
+    { item: "88658", type: "Ride On", price: 469.99 },
+    { item: "88605", type: "Ride On", price: 359.99 },
+    { item: "88620", type: "Ride On", price: 319.99 },
+    { item: "88621", type: "Ride On", price: 419.99 },
+    { item: "88626", type: "Ride On", price: 279.99 },
+    { item: "80109", type: "Ride On", price: 429.99 },
+    { item: "80063", type: "Ride On", price: 469.99 }
+  ];
+
+  function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function ceilTo5(val) {
+    return Math.ceil(val / 5) * 5;
+  }
+
+  // ================= TAB 1 逻辑 =================
+  const PURCHASE_PRICE_BASE = 35.0; // 35%
+  const OCEAN_FREIGHT = 9.0;        // 9.0%
+  const DUTY = 2.8;                 // 2.8%
+  const FIXED_COST = 10.0;          // 10.0%
+
+  const otherCostRateInput = document.getElementById('otherCostRate');
+  const otherCostRateSlider = document.getElementById('otherCostRateSlider');
+  const otherCostRateVal = document.getElementById('otherCostRateVal');
+
+  const custPriceInput = document.getElementById('custPrice');
+  const custPriceSlider = document.getElementById('custPriceSlider');
+  const custPriceVal = document.getElementById('custPriceVal');
+
+  const rebateRateInput = document.getElementById('rebateRate');
+  const rebateRateSlider = document.getElementById('rebateRateSlider');
+  const rebateRateVal = document.getElementById('rebateRateVal');
+
+  const rebateFactorInput = document.getElementById('rebateFactor');
+  const rebateFactorSlider = document.getElementById('rebateFactorSlider');
+  const rebateFactorVal = document.getElementById('rebateFactorVal');
+
+  const voltzMarginEl = document.getElementById('voltzMargin');
+  const rebateVsCustomerEl = document.getElementById('rebateVsCustomer');
+  const auditCompoundRebate = document.getElementById('auditCompoundRebate');
+  const auditBaseRebate = document.getElementById('auditBaseRebate');
+  const auditCogsDetail = document.getElementById('auditCogsDetail');
+
+  const ledgerOtherVal = document.getElementById('ledgerOtherVal');
+  const ledgerCogsVal = document.getElementById('ledgerCogsVal');
+  const ledgerTotalBaseVal = document.getElementById('ledgerTotalBaseVal');
+
+  function syncCalc(src, target) {
+    target.value = src.value;
+    recalculate();
+    calculateSalesEval();
+  }
+
+  otherCostRateInput.addEventListener('input', () => syncCalc(otherCostRateInput, otherCostRateSlider));
+  otherCostRateSlider.addEventListener('input', () => syncCalc(otherCostRateSlider, otherCostRateInput));
+
+  custPriceInput.addEventListener('input', () => syncCalc(custPriceInput, custPriceSlider));
+  custPriceSlider.addEventListener('input', () => syncCalc(custPriceSlider, custPriceInput));
+
+  rebateRateInput.addEventListener('input', () => syncCalc(rebateRateInput, rebateRateSlider));
+  rebateRateSlider.addEventListener('input', () => syncCalc(rebateRateSlider, rebateRateInput));
+
+  rebateFactorInput.addEventListener('input', () => syncCalc(rebateFactorInput, rebateFactorSlider));
+  rebateFactorSlider.addEventListener('input', () => syncCalc(rebateFactorSlider, rebateFactorInput));
+
+  function getDynamicCostStructure() {
+    const otherCost = parseFloat(otherCostRateInput.value) || 0;
+    const currentCogs = PURCHASE_PRICE_BASE + OCEAN_FREIGHT + DUTY + otherCost; 
+    const currentTotalBase = currentCogs + FIXED_COST; 
+    return { otherCost, currentCogs, currentTotalBase };
+  }
+
+  function recalculate() {
+    const { otherCost, currentCogs, currentTotalBase } = getDynamicCostStructure();
+
+    const custPrice = parseFloat(custPriceInput.value) || 0;
+    const rebateRateOnPurchase = parseFloat(rebateRateInput.value) || 0;
+    const rebateFactor = parseFloat(rebateFactorInput.value) || 0;
+
+    otherCostRateVal.textContent = otherCost.toFixed(1) + '%';
+    custPriceVal.textContent = custPrice.toFixed(1) + '%';
+    rebateRateVal.textContent = rebateRateOnPurchase.toFixed(1) + '%';
+    rebateFactorVal.textContent = rebateFactor.toFixed(1) + '%';
+
+    ledgerOtherVal.textContent = otherCost.toFixed(1) + '%';
+    ledgerCogsVal.textContent = currentCogs.toFixed(1) + '%';
+    ledgerTotalBaseVal.textContent = currentTotalBase.toFixed(1) + '%';
+
+    const effectiveRebateOnPurchase = rebateRateOnPurchase * (rebateFactor / 100);
+    const compoundRebateMsrp = custPrice * (effectiveRebateOnPurchase / 100);
+    const finalMargin = custPrice - compoundRebateMsrp - currentTotalBase;
+    const rebateVsCust = rebateRateOnPurchase;
+
+    voltzMarginEl.textContent = finalMargin.toFixed(2) + '%';
+    voltzMarginEl.style.color = finalMargin < 0 ? 'var(--danger)' : (finalMargin < 5 ? 'var(--warning)' : 'var(--success)');
+
+    rebateVsCustomerEl.textContent = rebateVsCust.toFixed(2) + '%';
+
+    auditCogsDetail.textContent = `${currentCogs.toFixed(2)}% of MSRP (采购 35% + 海运 9% + 关税 2.8% + 其他 ${otherCost.toFixed(1)}%)`;
+    auditCompoundRebate.textContent = compoundRebateMsrp.toFixed(2) + '% of MSRP';
+    auditBaseRebate.textContent = rebateRateOnPurchase.toFixed(2) + '% of Purchase Price';
+  }
+
+  function syncRateToCatalog() {
+    const custPrice = parseFloat(custPriceInput.value) || 75.0;
+    document.getElementById('priceMultiplier').value = custPrice.toFixed(1);
+    renderTable();
+    const buttons = document.querySelectorAll('.tab-btn');
+    switchTab('catalogTab', buttons[1]);
+  }
+
+  function copyQuote() {
+    const { otherCost, currentCogs, currentTotalBase } = getDynamicCostStructure();
+    const custPrice = parseFloat(custPriceInput.value) || 0;
+    const rebateRateOnPurchase = parseFloat(rebateRateInput.value) || 0;
+    const rebateFactor = parseFloat(rebateFactorInput.value) || 0;
+    const effectiveRebateOnPurchase = rebateRateOnPurchase * (rebateFactor / 100);
+    const compoundRebateMsrp = (custPrice * (effectiveRebateOnPurchase / 100)).toFixed(2);
+    const finalMargin = (custPrice - compoundRebateMsrp - currentTotalBase).toFixed(2);
+
+    const text = 
+`【Voltz Toys 批发商务结构报价 - REV ${CURRENT_REV}】
+1. 客户买入价格: ${custPrice}% of MSRP
+2. 基础返点比率: ${rebateRateOnPurchase}% of Purchase Price (占采购价)
+3. 返点折算系数: ${rebateFactor}%
+
+• 扣除复合返点: ${compoundRebateMsrp}% of MSRP
+• 落地成本 COGS: ${currentCogs.toFixed(2)}% of MSRP (采购 35% + 海运 9% + 关税 2.8% + 其他 ${otherCost.toFixed(1)}%)
+• 综合基准总成本: ${currentTotalBase.toFixed(2)}% of MSRP (含固定费用 10.0%)
+--------------------------------------------
+★ Voltz Toys 最终净利率: ${finalMargin}% of MSRP
+★ 返点占客户买入价比例: ${rebateRateOnPurchase.toFixed(2)}%`;
+
+    navigator.clipboard.writeText(text).then(() => alert('报价方案已成功复制到剪贴板！'));
+  }
+
+  // ================= TAB 2 逻辑 =================
+  function renderTable() {
+    const multiplier = (parseFloat(document.getElementById('priceMultiplier').value) || 0) / 100;
+    const typeFilter = document.getElementById('typeFilter').value;
+    const search = document.getElementById('searchBox').value.trim().toLowerCase();
+
+    const tbody = document.getElementById('catalogTbody');
+    tbody.innerHTML = '';
+
+    let visibleCount = 0;
+    let sumAdjustedPrice = 0;
+
+    rawCatalogData.forEach((row) => {
+      if (typeFilter !== 'ALL' && row.type !== typeFilter) return;
+      if (search && !row.item.toLowerCase().includes(search)) return;
+
+      visibleCount++;
+      const rawExact = row.price * multiplier;
+      const adjustedPrice = ceilTo5(rawExact);
+      sumAdjustedPrice += adjustedPrice;
+      const actualPct = ((adjustedPrice / row.price) * 100).toFixed(1);
+
+      const tr = document.createElement('tr');
+      const badgeClass = row.type === 'Ride On' ? 'ride-on' : 'push-car';
+
+      tr.innerHTML = `
+        <td>${visibleCount}</td>
+        <td><strong>${row.item}</strong></td>
+        <td><span class="tag-badge ${badgeClass}">${row.type}</span></td>
+        <td class="num">$${row.price.toFixed(2)}</td>
+        <td class="num">${(multiplier * 100).toFixed(1)}%</td>
+        <td class="num"><strong style="color: var(--primary); font-size: 0.95rem;">$${adjustedPrice.toFixed(2)}</strong></td>
+        <td class="num" style="color: var(--text-muted);">${actualPct}%</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('filteredCount').textContent = `共展示 ${visibleCount} 款产品（总库容 67 款）`;
+    const avg = visibleCount > 0 ? (sumAdjustedPrice / visibleCount).toFixed(2) : '0.00';
+    document.getElementById('avgAdjustedPrice').textContent = `$${avg}`;
+  }
+
+  function exportCSV() {
+    const multiplier = (parseFloat(document.getElementById('priceMultiplier').value) || 0) / 100;
+    let csv = "Index,Item,Type,MSRP,Multiplier,AdjustedPrice_Ceil5,ActualDiscountPct\n";
+
+    rawCatalogData.forEach((row, idx) => {
+      const adjusted = ceilTo5(row.price * multiplier).toFixed(2);
+      const actualPct = ((adjusted / row.price) * 100).toFixed(1);
+      csv += `${idx + 1},${row.item},${row.type},${row.price.toFixed(2)},${(multiplier*100).toFixed(1)}%,${adjusted},${actualPct}%\n`;
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Voltz_Toys_Adjusted_Prices_Ceil5_${(multiplier*100).toFixed(0)}pct_${CURRENT_REV}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // ================= TAB 3 逻辑 (新增四大收益拆解及合计自采比例) =================
+  const agentCommRateInput = document.getElementById('agentCommRate');
+  const agentCommRateSlider = document.getElementById('agentCommRateSlider');
+  const agentCommRateVal = document.getElementById('agentCommRateVal');
+
+  const selfCommRateInput = document.getElementById('selfCommRate');
+  const selfCommRateSlider = document.getElementById('selfCommRateSlider');
+  const selfCommRateVal = document.getElementById('selfCommRateVal');
+
+  const customRebateRateInput = document.getElementById('customRebateRate');
+  const customRebateRateSlider = document.getElementById('customRebateRateSlider');
+  const customRebateRateVal = document.getElementById('customRebateRateVal');
+
+  const evalWholesaleRateInput = document.getElementById('evalWholesaleRate');
+  const evalWholesaleRateSlider = document.getElementById('evalWholesaleRateSlider');
+  const evalWholesaleRateVal = document.getElementById('evalWholesaleRateVal');
+
+  const selfPurchaseVolInput = document.getElementById('selfPurchaseVol');
+  const otherWholesaleVolInput = document.getElementById('otherWholesaleVol');
+
+  function syncEval(src, target) {
+    target.value = src.value;
+    calculateSalesEval();
+  }
+
+  agentCommRateInput.addEventListener('input', () => syncEval(agentCommRateInput, agentCommRateSlider));
+  agentCommRateSlider.addEventListener('input', () => syncEval(agentCommRateSlider, agentCommRateInput));
+
+  selfCommRateInput.addEventListener('input', () => syncEval(selfCommRateInput, selfCommRateSlider));
+  selfCommRateSlider.addEventListener('input', () => syncEval(selfCommRateSlider, selfCommRateInput));
+
+  customRebateRateInput.addEventListener('input', () => syncEval(customRebateRateInput, customRebateRateSlider));
+  customRebateRateSlider.addEventListener('input', () => syncCalc(customRebateRateSlider, customRebateRateInput));
+
+  evalWholesaleRateInput.addEventListener('input', () => syncEval(evalWholesaleRateInput, evalWholesaleRateSlider));
+  evalWholesaleRateSlider.addEventListener('input', () => syncEval(evalWholesaleRateSlider, evalWholesaleRateInput));
+
+  selfPurchaseVolInput.addEventListener('input', calculateSalesEval);
+  otherWholesaleVolInput.addEventListener('input', calculateSalesEval);
+
+  function calculateSalesEval() {
+    const { currentCogs } = getDynamicCostStructure();
+    const cogsRatio = currentCogs / 100;
+
+    const agentCommPct = (parseFloat(agentCommRateInput.value) || 0) / 100;
+    const selfCommPct = (parseFloat(selfCommRateInput.value) || 0) / 100;
+    const customRebatePct = (parseFloat(customRebateRateInput.value) || 0) / 100;
+    const wholesalePriceRatio = (parseFloat(evalWholesaleRateInput.value) || 75) / 100;
+    const selfVol = parseFloat(selfPurchaseVolInput.value) || 0;
+    const otherVol = parseFloat(otherWholesaleVolInput.value) || 0;
+
+    agentCommRateVal.textContent = (agentCommPct * 100).toFixed(1) + '%';
+    selfCommRateVal.textContent = (selfCommPct * 100).toFixed(1) + '%';
+    customRebateRateVal.textContent = (customRebatePct * 100).toFixed(1) + '%';
+    evalWholesaleRateVal.textContent = (wholesalePriceRatio * 100).toFixed(1) + '%';
+
+    // 毛利率计算 (批发价 - 落地COGS) / 批发价
+    const grossMarginOnWholesale = wholesalePriceRatio > cogsRatio 
+      ? (wholesalePriceRatio - cogsRatio) / wholesalePriceRatio 
+      : 0;
+
+    document.getElementById('grossMarginNote').textContent = 
+      `毛利率：${(grossMarginOnWholesale*100).toFixed(2)}% [(${(wholesalePriceRatio*100).toFixed(1)}% - ${currentCogs.toFixed(1)}% COGS) ÷ ${(wholesalePriceRatio*100).toFixed(1)}%]`;
+
+    // 1. 其他客人的批发提成
+    const otherGrossProfit = otherVol * grossMarginOnWholesale;
+    const commFromOther = otherGrossProfit * agentCommPct;
+
+    // 2. 自己的批发提成
+    const selfGrossProfit = selfVol * grossMarginOnWholesale;
+    const commFromSelf = selfGrossProfit * selfCommPct;
+
+    // 3. 自己的批发退点
+    const selfRebateAmount = selfVol * customRebatePct;
+
+    // 4. 自己进货能卖出去的毛利 (按照能用 100% MSRP 全价售出)
+    // 进货金额 selfVol 对应 MSRP 总额 = selfVol / wholesalePriceRatio
+    // 售出毛利 = MSRP - selfVol
+    let retailGrossProfit = 0;
+    let selfMsrpTotal = 0;
+    if (wholesalePriceRatio > 0) {
+      selfMsrpTotal = selfVol / wholesalePriceRatio;
+      retailGrossProfit = Math.max(0, selfMsrpTotal - selfVol);
+    }
+
+    // 整体能赚的钱 (4部分之和)
+    const grandTotalEarnings = commFromOther + commFromSelf + selfRebateAmount + retailGrossProfit;
+
+    // 批发端渠道所得总收益 (前3项之和)
+    const wholesaleEarnings = commFromOther + commFromSelf + selfRebateAmount;
+
+    // 新增核心指标：该业务员自采合计提成比例 = (自采提成 + 退点) / 自己的总采购额
+    let combinedSelfRate = 0;
+    if (selfVol > 0) {
+      combinedSelfRate = ((commFromSelf + selfRebateAmount) / selfVol) * 100;
+    }
+
+    // 公司端纯利润核算
+    const totalWholesaleVol = selfVol + otherVol;
+    const totalGrossProfitPool = otherGrossProfit + selfGrossProfit;
+    const totalCommission = commFromOther + commFromSelf;
+    const fixedOverheadAmount = wholesalePriceRatio > 0 ? (totalWholesaleVol / wholesalePriceRatio) * 0.10 : 0;
+    const companyNetProfit = totalGrossProfitPool - totalCommission - selfRebateAmount - fixedOverheadAmount;
+    const companyNetMarginPct = totalWholesaleVol > 0 ? (companyNetProfit / totalWholesaleVol) * 100 : 0;
+
+    // 渲染 KPI 指标
+    document.getElementById('totalPersonalIncome').textContent = `$${grandTotalEarnings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('combinedSelfRate').textContent = `${combinedSelfRate.toFixed(2)}%`;
+    document.getElementById('wholesaleEarningSubtotal').textContent = `$${wholesaleEarnings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+    const netEl = document.getElementById('companyNetProfit');
+    netEl.textContent = `$${companyNetProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    netEl.style.color = companyNetProfit < 0 ? 'var(--danger)' : 'var(--success)';
+    document.getElementById('companyNetPct').textContent = `扣减提成、退点及固定成本后净利率: ${companyNetMarginPct.toFixed(2)}%`;
+
+    // 渲染 4 维收益拆解看板
+    document.getElementById('quadPart1').textContent = `$${commFromOther.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('quadPart1Sub').textContent = `外部毛利 $${otherGrossProfit.toFixed(2)} × ${(agentCommPct*100).toFixed(1)}%`;
+
+    document.getElementById('quadPart2').textContent = `$${commFromSelf.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('quadPart2Sub').textContent = `自采毛利 $${selfGrossProfit.toFixed(2)} × ${(selfCommPct*100).toFixed(1)}%`;
+
+    document.getElementById('quadPart3').textContent = `$${selfRebateAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('quadPart3Sub').textContent = `自采 $${selfVol.toLocaleString()} × ${(customRebatePct*100).toFixed(1)}% 退点`;
+
+    document.getElementById('quadPart4').textContent = `$${retailGrossProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('quadPart4Sub').textContent = `MSRP总额 $${selfMsrpTotal.toFixed(2)} − 采购成本 $${selfVol.toFixed(2)}`;
+
+    // 账目明细清单
+    document.getElementById('bkTotalWholesaleVol').textContent = `$${totalWholesaleVol.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('bkGrossProfitPool').textContent = `$${totalGrossProfitPool.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (综合毛利率: ${(grossMarginOnWholesale*100).toFixed(2)}%)`;
+    document.getElementById('bkOtherDetail').textContent = `$${otherGrossProfit.toFixed(2)} (提成 @${(agentCommPct*100).toFixed(1)}%: $${commFromOther.toFixed(2)})`;
+    document.getElementById('bkSelfDetail').textContent = `$${selfGrossProfit.toFixed(2)} (提成 @${(selfCommPct*100).toFixed(1)}%: $${commFromSelf.toFixed(2)})`;
+    document.getElementById('bkRebateDetail').textContent = `-$${selfRebateAmount.toFixed(2)} (按输入的 ${(customRebatePct*100).toFixed(1)}% 计算)`;
+    document.getElementById('bkFixedOverheadDetail').textContent = `-$${fixedOverheadAmount.toFixed(2)} (占出货额: ${((0.10/wholesalePriceRatio)*100).toFixed(2)}%)`;
+    document.getElementById('bkFinalCompanyMargin').textContent = `$${companyNetProfit.toFixed(2)} (${companyNetMarginPct.toFixed(2)}%)`;
+  }
+
+  function resetEvalDefaults() {
+    agentCommRateInput.value = 15;
+    agentCommRateSlider.value = 15;
+    selfCommRateInput.value = 10;
+    selfCommRateSlider.value = 10;
+    customRebateRateInput.value = 5.0;
+    customRebateRateSlider.value = 5.0;
+    evalWholesaleRateInput.value = 75;
+    evalWholesaleRateSlider.value = 75;
+    selfPurchaseVolInput.value = 15000;
+    otherWholesaleVolInput.value = 50000;
+    calculateSalesEval();
+  }
+
+  function copySalesEval() {
+    const { currentCogs } = getDynamicCostStructure();
+    const agentRate = agentCommRateInput.value;
+    const selfRate = selfCommRateInput.value;
+    const rebateRate = customRebateRateInput.value;
+    const selfVol = parseFloat(selfPurchaseVolInput.value) || 0;
+    const otherVol = parseFloat(otherWholesaleVolInput.value) || 0;
+
+    const totalGrand = document.getElementById('totalPersonalIncome').textContent;
+    const combinedPct = document.getElementById('combinedSelfRate').textContent;
+    const p1 = document.getElementById('quadPart1').textContent;
+    const p2 = document.getElementById('quadPart2').textContent;
+    const p3 = document.getElementById('quadPart3').textContent;
+    const p4 = document.getElementById('quadPart4').textContent;
+    const compNet = document.getElementById('companyNetProfit').textContent;
+
+    const text = 
+`【Voltz Toys 业务员兼零售商测评报告 - REV ${CURRENT_REV}】
+• 动态 COGS 扣减基准: ${currentCogs.toFixed(2)}% of MSRP
+• 代理提成率: ${agentRate}% | 自采提成率: ${selfRate}% | 退点率: ${rebateRate}%
+• 零售自采进货额: $${selfVol.toLocaleString()} | 外部批发业绩: $${otherVol.toLocaleString()}
+--------------------------------------------
+★ 该业务员自采合计提成比例: ${combinedPct}
+★ 该业务员整体能赚的钱 (4维合计): ${totalGrand}
+   ① 其他客人的批发提成: ${p1}
+   ② 自己的批发提成: ${p2}
+   ③ 自己的批发退点: ${p3}
+   ④ 自采按 MSRP 售出的毛利: ${p4}
+--------------------------------------------
+★ 公司年度纯利留存: ${compNet}`;
+
+    navigator.clipboard.writeText(text).then(() => alert('测评报告已成功复制到剪贴板！'));
+  }
+
+  recalculate();
+  renderTable();
+  calculateSalesEval();
+</script>
+
+</body>
+</html>
