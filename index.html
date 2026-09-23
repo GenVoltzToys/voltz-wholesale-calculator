@@ -93,6 +93,14 @@
       margin-top: 0.2rem;
     }
 
+    /* 顶部操作区（导入、导出与设为默认） */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
     .nav-tabs {
       display: flex;
       background: #0f172a;
@@ -100,9 +108,12 @@
       border-radius: 10px;
       gap: 0.35rem;
       border: 1px solid var(--border);
+      margin-top: 0.5rem;
+      width: 100%;
     }
 
     .tab-btn {
+      flex: 1;
       background: transparent;
       border: none;
       color: var(--text-muted);
@@ -112,6 +123,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      text-align: center;
     }
 
     .tab-btn.active {
@@ -428,17 +440,22 @@
       background: var(--card-subtle);
       border: 1px solid var(--border);
       color: #fff;
-      padding: 0.55rem 0.9rem;
+      padding: 0.5rem 0.85rem;
       border-radius: 7px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
     }
 
     .btn:hover { background: var(--border); }
     .btn-primary { background: #0284c7; border-color: var(--primary); }
     .btn-primary:hover { background: #0369a1; }
+    .btn-warning { background: rgba(245, 158, 11, 0.2); border-color: var(--warning); color: #fde68a; }
+    .btn-warning:hover { background: rgba(245, 158, 11, 0.35); }
 
     .btn-row {
       margin-top: 1.5rem;
@@ -496,24 +513,40 @@
 <body>
 
 <div class="wrapper">
-  <!-- 头部与版本号展示 (YYMMDDHHMM) -->
+  <!-- 头部与版本号展示 (YYMMDDHHMM) 及数据组管理快捷栏 -->
   <div class="header">
     <div class="header-left">
       <div class="header-title-row">
         <h1>Voltz Toys 批发与综合测评系统</h1>
-        <span class="rev-badge">REV: 2609231350</span>
+        <span class="rev-badge">REV: 2609231430</span>
       </div>
       <p>Wholesale Pricing, Catalog & Dual-Role Sales Commission System</p>
     </div>
+
+    <!-- 顶栏快捷数据组操作按键 -->
+    <div class="header-actions">
+      <input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleImportFile(event)">
+      <button class="btn" onclick="document.getElementById('importFileInput').click()" title="导入保存的 JSON 配置数据组">
+        📂 导入数据组
+      </button>
+      <button class="btn" onclick="exportDataGroup()" title="将当前全部参数导出为 JSON 文件下载">
+        💾 导出数据组
+      </button>
+      <button class="btn btn-warning" onclick="saveAsProtectedDefault()" title="需输入管理密码，将当前数据锁定为系统初始默认值">
+        🔒 设为默认 (需密码)
+      </button>
+    </div>
+
+    <!-- 导航选项卡 -->
     <div class="nav-tabs">
-      <button class="tab-btn" onclick="switchTab('calcTab', this)">批发利润测算</button>
+      <button class="tab-btn active" onclick="switchTab('calcTab', this)">批发利润测算</button>
       <button class="tab-btn" onclick="switchTab('catalogTab', this)">现行价格表 (67款)</button>
-      <button class="tab-btn active" onclick="switchTab('salesEvalTab', this)">业务员兼零售测评 ⭐</button>
+      <button class="tab-btn" onclick="switchTab('salesEvalTab', this)">业务员兼零售测评 ⭐</button>
     </div>
   </div>
 
   <!-- TAB 1: 批发利润测算器 -->
-  <div id="calcTab" class="tab-content">
+  <div id="calcTab" class="tab-content active">
     <div class="cost-ledger">
       <div class="ledger-item">
         <span class="label">采购成本</span>
@@ -632,7 +665,7 @@
     </div>
   </div>
 
-  <!-- TAB 2: 现行零售价格库 (向上进位至近似5) -->
+  <!-- TAB 2: 现行零售价格库 -->
   <div id="catalogTab" class="tab-content">
     <div class="catalog-bar">
       <div class="control-item">
@@ -684,8 +717,8 @@
     </div>
   </div>
 
-  <!-- TAB 3: 业务员兼零售商测评系统 (净利润率以 MSRP 为分母) -->
-  <div id="salesEvalTab" class="tab-content active">
+  <!-- TAB 3: 业务员兼零售商测评系统 -->
+  <div id="salesEvalTab" class="tab-content">
     <div class="eval-section">
       <div class="eval-section-title">⚙️ 提成与退点比例设定（独立输入）</div>
       
@@ -774,28 +807,24 @@
 
     <!-- 顶部重点指标卡片 -->
     <div class="results-grid">
-      <!-- 指标 1：整体总收益 -->
       <div class="kpi-card income">
         <div class="kpi-title">该业务员整体能赚的钱 (4部分合计)</div>
         <div class="kpi-value" id="totalPersonalIncome" style="color: var(--emerald);">$0.00</div>
         <div class="kpi-subtext">外部提成 + 自采提成 + 批发退点 + 自采按MSRP售出毛利</div>
       </div>
 
-      <!-- 指标 2：自采合计提成比例 -->
       <div class="kpi-card highlight">
         <div class="kpi-title">业务员自采合计提成比例</div>
         <div class="kpi-value" id="combinedSelfRate" style="color: #f43f5e;">0.00%</div>
         <div class="kpi-subtext">(自采进货提成 + 批发退点) ÷ 自采总进货额</div>
       </div>
 
-      <!-- 批发端所得总收益 -->
       <div class="kpi-card comm-agent">
         <div class="kpi-title">批发端渠道所得总收益</div>
         <div class="kpi-value" id="wholesaleEarningSubtotal" style="color: var(--primary);">$0.00</div>
         <div class="kpi-subtext">外部代理提成 + 自采提成 + 采购退点</div>
       </div>
 
-      <!-- 公司净利润留存 (以 MSRP 为分母) -->
       <div class="kpi-card margin">
         <div class="kpi-title">公司最终净留存利润</div>
         <div class="kpi-value" id="companyNetProfit" style="color: var(--success);">$0.00</div>
@@ -803,7 +832,7 @@
       </div>
     </div>
 
-    <!-- 业务员整体能赚的钱 4 维看板 -->
+    <!-- 4维看板 -->
     <div class="eval-section" style="margin-top: 1.5rem; background: rgba(15, 23, 42, 0.4);">
       <div class="eval-section-title" style="color: #fff;">
         💰 业务员整体总收益透视拆解（4 维资金来源看板）
@@ -876,14 +905,14 @@
 
     <div class="btn-row">
       <button class="btn" onclick="copySalesEval()">复制该个体综合结算报告</button>
-      <button class="btn" onclick="resetEvalDefaults()">恢复默认测评参数</button>
+      <button class="btn" onclick="resetToSystemDefault()">恢复系统默认值</button>
     </div>
   </div>
 
   <!-- 底部修订版本管理栏 -->
   <div class="footer-rev-bar">
     <div>
-      当前系统构建版本：<code>REV: 2609231350</code> (YYMMDDHHMM)
+      当前系统构建版本：<code>REV: 2609231430</code> (YYMMDDHHMM)
     </div>
     <div>
       <button class="btn" onclick="downloadRevHistory()">📥 下载修订历史 (Rev History .txt)</button>
@@ -892,18 +921,42 @@
 </div>
 
 <script>
-  const CURRENT_REV = "2609231350";
+  // 系统构建版本号
+  const CURRENT_REV = "2609231430";
+
+  // 管理员安全设置密码（如需修改在此更改）
+  const ADMIN_PASSWORD = "voltz888";
+
+  // 出厂系统初始默认数据组
+  const FACTORY_DEFAULTS = {
+    otherCostRate: 0.0,
+    custPrice: 70.0,
+    rebateRate: 5.0,
+    rebateFactor: 100.0,
+    priceMultiplier: 75.0,
+    agentCommRate: 15.0,
+    selfCommRate: 10.0,
+    customRebateRate: 5.0,
+    evalWholesaleRate: 75.0,
+    selfPurchaseVol: 15000,
+    otherWholesaleVol: 50000
+  };
 
   const REV_HISTORY_TEXT = 
 `================================================================================
 VOLTZ TOYS WHOLESALE PRICING & EVALUATION SYSTEM - REVISION HISTORY
 Current Version: REV ${CURRENT_REV}
-Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
+Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
 ================================================================================
+
+[REV: 2609231430] - 2026-09-23 14:30
+- 新增功能：数据组导入与导出 (JSON 格式)，支持整套参数保存与回填。
+- 新增密码保护存储按键：添加“设为默认 (需密码)”按键 (默认密码: voltz888)，可将当前填写的整套数据持久化保存为浏览器首选 Default。
+- 完善重置机制：提供“恢复系统默认值”快速还原出厂配置。
 
 [REV: 2609231350] - 2026-09-23 13:50
 - TAB 3 计算分母对齐：
-  “公司扣除双项提成、退点与固定分摊后的纯利润百分比”计算分母调整为 MSRP 零售总额基数（总出货额 ÷ 批发折扣率），并在清单中穿透展示对应 MSRP 货值。
+  “公司扣除双项提成、退点与固定分摊后的纯利润百分比”计算分母调整为 MSRP 零售总额基数（总出货额 ÷ 批发折扣率）。
 
 [REV: 2609231310] - 2026-09-23 13:10
 - TAB 3 功能升级：
@@ -1011,12 +1064,13 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
     return Math.ceil(val / 5) * 5;
   }
 
-  // ================= TAB 1 逻辑 =================
-  const PURCHASE_PRICE_BASE = 35.0; // 35%
-  const OCEAN_FREIGHT = 9.0;        // 9.0%
-  const DUTY = 2.8;                 // 2.8%
-  const FIXED_COST = 10.0;          // 10.0%
+  // 基础财务参数
+  const PURCHASE_PRICE_BASE = 35.0; 
+  const OCEAN_FREIGHT = 9.0;        
+  const DUTY = 2.8;                 
+  const FIXED_COST = 10.0;          
 
+  // DOM 元素引用
   const otherCostRateInput = document.getElementById('otherCostRate');
   const otherCostRateSlider = document.getElementById('otherCostRateSlider');
   const otherCostRateVal = document.getElementById('otherCostRateVal');
@@ -1033,6 +1087,8 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
   const rebateFactorSlider = document.getElementById('rebateFactorSlider');
   const rebateFactorVal = document.getElementById('rebateFactorVal');
 
+  const priceMultiplierInput = document.getElementById('priceMultiplier');
+
   const voltzMarginEl = document.getElementById('voltzMargin');
   const rebateVsCustomerEl = document.getElementById('rebateVsCustomer');
   const auditCompoundRebate = document.getElementById('auditCompoundRebate');
@@ -1043,10 +1099,29 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
   const ledgerCogsVal = document.getElementById('ledgerCogsVal');
   const ledgerTotalBaseVal = document.getElementById('ledgerTotalBaseVal');
 
+  const agentCommRateInput = document.getElementById('agentCommRate');
+  const agentCommRateSlider = document.getElementById('agentCommRateSlider');
+  const agentCommRateVal = document.getElementById('agentCommRateVal');
+
+  const selfCommRateInput = document.getElementById('selfCommRate');
+  const selfCommRateSlider = document.getElementById('selfCommRateSlider');
+  const selfCommRateVal = document.getElementById('selfCommRateVal');
+
+  const customRebateRateInput = document.getElementById('customRebateRate');
+  const customRebateRateSlider = document.getElementById('customRebateRateSlider');
+  const customRebateRateVal = document.getElementById('customRebateRateVal');
+
+  const evalWholesaleRateInput = document.getElementById('evalWholesaleRate');
+  const evalWholesaleRateSlider = document.getElementById('evalWholesaleRateSlider');
+  const evalWholesaleRateVal = document.getElementById('evalWholesaleRateVal');
+
+  const selfPurchaseVolInput = document.getElementById('selfPurchaseVol');
+  const otherWholesaleVolInput = document.getElementById('otherWholesaleVol');
+
+  // 双向绑定同步
   function syncCalc(src, target) {
     target.value = src.value;
-    recalculate();
-    calculateSalesEval();
+    recalculateAll();
   }
 
   otherCostRateInput.addEventListener('input', () => syncCalc(otherCostRateInput, otherCostRateSlider));
@@ -1061,6 +1136,21 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
   rebateFactorInput.addEventListener('input', () => syncCalc(rebateFactorInput, rebateFactorSlider));
   rebateFactorSlider.addEventListener('input', () => syncCalc(rebateFactorSlider, rebateFactorInput));
 
+  agentCommRateInput.addEventListener('input', () => syncCalc(agentCommRateInput, agentCommRateSlider));
+  agentCommRateSlider.addEventListener('input', () => syncCalc(agentCommRateSlider, agentCommRateInput));
+
+  selfCommRateInput.addEventListener('input', () => syncCalc(selfCommRateInput, selfCommRateSlider));
+  selfCommRateSlider.addEventListener('input', () => syncCalc(selfCommRateSlider, selfCommRateInput));
+
+  customRebateRateInput.addEventListener('input', () => syncCalc(customRebateRateInput, customRebateRateSlider));
+  customRebateRateSlider.addEventListener('input', () => syncCalc(customRebateRateSlider, customRebateRateInput));
+
+  evalWholesaleRateInput.addEventListener('input', () => syncCalc(evalWholesaleRateInput, evalWholesaleRateSlider));
+  evalWholesaleRateSlider.addEventListener('input', () => syncCalc(evalWholesaleRateSlider, evalWholesaleRateInput));
+
+  selfPurchaseVolInput.addEventListener('input', recalculateAll);
+  otherWholesaleVolInput.addEventListener('input', recalculateAll);
+
   function getDynamicCostStructure() {
     const otherCost = parseFloat(otherCostRateInput.value) || 0;
     const currentCogs = PURCHASE_PRICE_BASE + OCEAN_FREIGHT + DUTY + otherCost; 
@@ -1068,7 +1158,13 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
     return { otherCost, currentCogs, currentTotalBase };
   }
 
-  function recalculate() {
+  function recalculateAll() {
+    recalculateTab1();
+    renderTable();
+    calculateSalesEval();
+  }
+
+  function recalculateTab1() {
     const { otherCost, currentCogs, currentTotalBase } = getDynamicCostStructure();
 
     const custPrice = parseFloat(custPriceInput.value) || 0;
@@ -1087,12 +1183,11 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
     const effectiveRebateOnPurchase = rebateRateOnPurchase * (rebateFactor / 100);
     const compoundRebateMsrp = custPrice * (effectiveRebateOnPurchase / 100);
     const finalMargin = custPrice - compoundRebateMsrp - currentTotalBase;
-    const rebateVsCust = rebateRateOnPurchase;
 
     voltzMarginEl.textContent = finalMargin.toFixed(2) + '%';
     voltzMarginEl.style.color = finalMargin < 0 ? 'var(--danger)' : (finalMargin < 5 ? 'var(--warning)' : 'var(--success)');
 
-    rebateVsCustomerEl.textContent = rebateVsCust.toFixed(2) + '%';
+    rebateVsCustomerEl.textContent = rebateRateOnPurchase.toFixed(2) + '%';
 
     auditCogsDetail.textContent = `${currentCogs.toFixed(2)}% of MSRP (采购 35% + 海运 9% + 关税 2.8% + 其他 ${otherCost.toFixed(1)}%)`;
     auditCompoundRebate.textContent = compoundRebateMsrp.toFixed(2) + '% of MSRP';
@@ -1101,40 +1196,14 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
 
   function syncRateToCatalog() {
     const custPrice = parseFloat(custPriceInput.value) || 75.0;
-    document.getElementById('priceMultiplier').value = custPrice.toFixed(1);
+    priceMultiplierInput.value = custPrice.toFixed(1);
     renderTable();
     const buttons = document.querySelectorAll('.tab-btn');
     switchTab('catalogTab', buttons[1]);
   }
 
-  function copyQuote() {
-    const { otherCost, currentCogs, currentTotalBase } = getDynamicCostStructure();
-    const custPrice = parseFloat(custPriceInput.value) || 0;
-    const rebateRateOnPurchase = parseFloat(rebateRateInput.value) || 0;
-    const rebateFactor = parseFloat(rebateFactorInput.value) || 0;
-    const effectiveRebateOnPurchase = rebateRateOnPurchase * (rebateFactor / 100);
-    const compoundRebateMsrp = (custPrice * (effectiveRebateOnPurchase / 100)).toFixed(2);
-    const finalMargin = (custPrice - compoundRebateMsrp - currentTotalBase).toFixed(2);
-
-    const text = 
-`【Voltz Toys 批发商务结构报价 - REV ${CURRENT_REV}】
-1. 客户买入价格: ${custPrice}% of MSRP
-2. 基础返点比率: ${rebateRateOnPurchase}% of Purchase Price (占采购价)
-3. 返点折算系数: ${rebateFactor}%
-
-• 扣除复合返点: ${compoundRebateMsrp}% of MSRP
-• 落地成本 COGS: ${currentCogs.toFixed(2)}% of MSRP (采购 35% + 海运 9% + 关税 2.8% + 其他 ${otherCost.toFixed(1)}%)
-• 综合基准总成本: ${currentTotalBase.toFixed(2)}% of MSRP (含固定费用 10.0%)
---------------------------------------------
-★ Voltz Toys 最终净利率: ${finalMargin}% of MSRP
-★ 返点占客户买入价比例: ${rebateRateOnPurchase.toFixed(2)}%`;
-
-    navigator.clipboard.writeText(text).then(() => alert('报价方案已成功复制到剪贴板！'));
-  }
-
-  // ================= TAB 2 逻辑 =================
   function renderTable() {
-    const multiplier = (parseFloat(document.getElementById('priceMultiplier').value) || 0) / 100;
+    const multiplier = (parseFloat(priceMultiplierInput.value) || 0) / 100;
     const typeFilter = document.getElementById('typeFilter').value;
     const search = document.getElementById('searchBox').value.trim().toLowerCase();
 
@@ -1174,8 +1243,240 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
     document.getElementById('avgAdjustedPrice').textContent = `$${avg}`;
   }
 
+  function calculateSalesEval() {
+    const { currentCogs } = getDynamicCostStructure();
+    const cogsRatio = currentCogs / 100;
+
+    const agentCommPct = (parseFloat(agentCommRateInput.value) || 0) / 100;
+    const selfCommPct = (parseFloat(selfCommRateInput.value) || 0) / 100;
+    const customRebatePct = (parseFloat(customRebateRateInput.value) || 0) / 100;
+    const wholesalePriceRatio = (parseFloat(evalWholesaleRateInput.value) || 75) / 100;
+    const selfVol = parseFloat(selfPurchaseVolInput.value) || 0;
+    const otherVol = parseFloat(otherWholesaleVolInput.value) || 0;
+
+    agentCommRateVal.textContent = (agentCommPct * 100).toFixed(1) + '%';
+    selfCommRateVal.textContent = (selfCommPct * 100).toFixed(1) + '%';
+    customRebateRateVal.textContent = (customRebatePct * 100).toFixed(1) + '%';
+    evalWholesaleRateVal.textContent = (wholesalePriceRatio * 100).toFixed(1) + '%';
+
+    const grossMarginOnWholesale = wholesalePriceRatio > cogsRatio 
+      ? (wholesalePriceRatio - cogsRatio) / wholesalePriceRatio 
+      : 0;
+
+    document.getElementById('grossMarginNote').textContent = 
+      `毛利率：${(grossMarginOnWholesale*100).toFixed(2)}% [(${(wholesalePriceRatio*100).toFixed(1)}% - ${currentCogs.toFixed(1)}% COGS) ÷ ${(wholesalePriceRatio*100).toFixed(1)}%]`;
+
+    const otherGrossProfit = otherVol * grossMarginOnWholesale;
+    const commFromOther = otherGrossProfit * agentCommPct;
+
+    const selfGrossProfit = selfVol * grossMarginOnWholesale;
+    const commFromSelf = selfGrossProfit * selfCommPct;
+
+    const selfRebateAmount = selfVol * customRebatePct;
+
+    let retailGrossProfit = 0;
+    let selfMsrpTotal = 0;
+    if (wholesalePriceRatio > 0) {
+      selfMsrpTotal = selfVol / wholesalePriceRatio;
+      retailGrossProfit = Math.max(0, selfMsrpTotal - selfVol);
+    }
+
+    const grandTotalEarnings = commFromOther + commFromSelf + selfRebateAmount + retailGrossProfit;
+    const wholesaleEarnings = commFromOther + commFromSelf + selfRebateAmount;
+
+    let combinedSelfRate = 0;
+    if (selfVol > 0) {
+      combinedSelfRate = ((commFromSelf + selfRebateAmount) / selfVol) * 100;
+    }
+
+    const totalWholesaleVol = selfVol + otherVol;
+    const totalGrossProfitPool = otherGrossProfit + selfGrossProfit;
+    const totalCommission = commFromOther + commFromSelf;
+    const fixedOverheadAmount = wholesalePriceRatio > 0 ? (totalWholesaleVol / wholesalePriceRatio) * 0.10 : 0;
+    const companyNetProfit = totalGrossProfitPool - totalCommission - selfRebateAmount - fixedOverheadAmount;
+
+    let companyNetMarginMsrpPct = 0;
+    let totalMsrpVolume = 0;
+    if (wholesalePriceRatio > 0) {
+      totalMsrpVolume = totalWholesaleVol / wholesalePriceRatio;
+      if (totalMsrpVolume > 0) {
+        companyNetMarginMsrpPct = (companyNetProfit / totalMsrpVolume) * 100;
+      }
+    }
+
+    document.getElementById('totalPersonalIncome').textContent = `$${grandTotalEarnings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('combinedSelfRate').textContent = `${combinedSelfRate.toFixed(2)}%`;
+    document.getElementById('wholesaleEarningSubtotal').textContent = `$${wholesaleEarnings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+    const netEl = document.getElementById('companyNetProfit');
+    netEl.textContent = `$${companyNetProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    netEl.style.color = companyNetProfit < 0 ? 'var(--danger)' : 'var(--success)';
+    
+    document.getElementById('companyNetPct').textContent = `占 MSRP 净利润率: ${companyNetMarginMsrpPct.toFixed(2)}%`;
+
+    document.getElementById('quadPart1').textContent = `$${commFromOther.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('quadPart1Sub').textContent = `外部毛利 $${otherGrossProfit.toFixed(2)} × ${(agentCommPct*100).toFixed(1)}%`;
+
+    document.getElementById('quadPart2').textContent = `$${commFromSelf.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('quadPart2Sub').textContent = `自采毛利 $${selfGrossProfit.toFixed(2)} × ${(selfCommPct*100).toFixed(1)}%`;
+
+    document.getElementById('quadPart3').textContent = `$${selfRebateAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('quadPart3Sub').textContent = `自采 $${selfVol.toLocaleString()} × ${(customRebatePct*100).toFixed(1)}% 退点`;
+
+    document.getElementById('quadPart4').textContent = `$${retailGrossProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('quadPart4Sub').textContent = `MSRP总额 $${selfMsrpTotal.toFixed(2)} − 采购成本 $${selfVol.toFixed(2)}`;
+
+    document.getElementById('bkTotalWholesaleVol').textContent = `$${totalWholesaleVol.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('bkTotalMsrpVol').textContent = `$${totalMsrpVolume.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('bkGrossProfitPool').textContent = `$${totalGrossProfitPool.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (综合毛利率: ${(grossMarginOnWholesale*100).toFixed(2)}%)`;
+    document.getElementById('bkOtherDetail').textContent = `$${otherGrossProfit.toFixed(2)} (提成 @${(agentCommPct*100).toFixed(1)}%: $${commFromOther.toFixed(2)})`;
+    document.getElementById('bkSelfDetail').textContent = `$${selfGrossProfit.toFixed(2)} (提成 @${(selfCommPct*100).toFixed(1)}%: $${commFromSelf.toFixed(2)})`;
+    document.getElementById('bkRebateDetail').textContent = `-$${selfRebateAmount.toFixed(2)} (按输入的 ${(customRebatePct*100).toFixed(1)}% 计算)`;
+    document.getElementById('bkFixedOverheadDetail').textContent = `-$${fixedOverheadAmount.toFixed(2)} (占出货额: ${((0.10/wholesalePriceRatio)*100).toFixed(2)}%)`;
+    document.getElementById('bkFinalCompanyMargin').textContent = `$${companyNetProfit.toFixed(2)} (占 MSRP: ${companyNetMarginMsrpPct.toFixed(2)}%)`;
+  }
+
+  // ================= 数据组导出、导入与持久化默认值功能 =================
+
+  // 获取当前 UI 全部参数为一个对象
+  function getCurrentDataGroup() {
+    return {
+      otherCostRate: parseFloat(otherCostRateInput.value) || 0,
+      custPrice: parseFloat(custPriceInput.value) || 0,
+      rebateRate: parseFloat(rebateRateInput.value) || 0,
+      rebateFactor: parseFloat(rebateFactorInput.value) || 0,
+      priceMultiplier: parseFloat(priceMultiplierInput.value) || 0,
+      agentCommRate: parseFloat(agentCommRateInput.value) || 0,
+      selfCommRate: parseFloat(selfCommRateInput.value) || 0,
+      customRebateRate: parseFloat(customRebateRateInput.value) || 0,
+      evalWholesaleRate: parseFloat(evalWholesaleRateInput.value) || 0,
+      selfPurchaseVol: parseFloat(selfPurchaseVolInput.value) || 0,
+      otherWholesaleVol: parseFloat(otherWholesaleVolInput.value) || 0,
+      exportedAt: new Date().toISOString(),
+      revVersion: CURRENT_REV
+    };
+  }
+
+  // 将数据对象应用到所有 UI 控件中
+  function applyDataGroup(data) {
+    if (!data) return;
+    if (data.otherCostRate !== undefined) {
+      otherCostRateInput.value = data.otherCostRate;
+      otherCostRateSlider.value = data.otherCostRate;
+    }
+    if (data.custPrice !== undefined) {
+      custPriceInput.value = data.custPrice;
+      custPriceSlider.value = data.custPrice;
+    }
+    if (data.rebateRate !== undefined) {
+      rebateRateInput.value = data.rebateRate;
+      rebateRateSlider.value = data.rebateRate;
+    }
+    if (data.rebateFactor !== undefined) {
+      rebateFactorInput.value = data.rebateFactor;
+      rebateFactorSlider.value = data.rebateFactor;
+    }
+    if (data.priceMultiplier !== undefined) {
+      priceMultiplierInput.value = data.priceMultiplier;
+    }
+    if (data.agentCommRate !== undefined) {
+      agentCommRateInput.value = data.agentCommRate;
+      agentCommRateSlider.value = data.agentCommRate;
+    }
+    if (data.selfCommRate !== undefined) {
+      selfCommRateInput.value = data.selfCommRate;
+      selfCommRateSlider.value = data.selfCommRate;
+    }
+    if (data.customRebateRate !== undefined) {
+      customRebateRateInput.value = data.customRebateRate;
+      customRebateRateSlider.value = data.customRebateRate;
+    }
+    if (data.evalWholesaleRate !== undefined) {
+      evalWholesaleRateInput.value = data.evalWholesaleRate;
+      evalWholesaleRateSlider.value = data.evalWholesaleRate;
+    }
+    if (data.selfPurchaseVol !== undefined) {
+      selfPurchaseVolInput.value = data.selfPurchaseVol;
+    }
+    if (data.otherWholesaleVol !== undefined) {
+      otherWholesaleVolInput.value = data.otherWholesaleVol;
+    }
+    recalculateAll();
+  }
+
+  // 1. 导出数据组 (Export JSON)
+  function exportDataGroup() {
+    const data = getCurrentDataGroup();
+    const jsonStr = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Voltz_Toys_DataGroup_${CURRENT_REV}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // 2. 导入数据组 (Import JSON)
+  function handleImportFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const importedData = JSON.parse(e.target.result);
+        applyDataGroup(importedData);
+        alert('✅ 成功导入并应用所选数据组！');
+      } catch (err) {
+        alert('❌ 导入失败：无效的 JSON 数据文件格式！');
+      }
+      event.target.value = ''; // 清空方便重复上传
+    };
+    reader.readAsText(file);
+  }
+
+  // 3. 密码保护存储按键：将现行数据组记录成系统默认 (Set as Default)
+  function saveAsProtectedDefault() {
+    const pwd = prompt("🔐 请输入管理员安全密码以锁定当前数据为默认配置：\n(默认初始密码：voltz888)");
+    if (pwd === null) return; // 用户取消
+
+    if (pwd === ADMIN_PASSWORD) {
+      const currentData = getCurrentDataGroup();
+      localStorage.setItem('VOLTZ_CUSTOM_DEFAULT_DATA', JSON.stringify(currentData));
+      alert("✅ 授权成功！当前现行数据组已成功保存为系统新默认值。\n下次刷新或重新打开本页面时，将自动以该套数据启动。");
+    } else {
+      alert("❌ 密码错误！您无权更改系统默认配置。");
+    }
+  }
+
+  // 4. 恢复系统出厂默认值
+  function resetToSystemDefault() {
+    if (confirm("确认清除自定义默认值并恢复出厂初始设置吗？")) {
+      localStorage.removeItem('VOLTZ_CUSTOM_DEFAULT_DATA');
+      applyDataGroup(FACTORY_DEFAULTS);
+      alert("已重置为出厂预设参数。");
+    }
+  }
+
+  // 页面加载时的初始加载策略：优先加载用户锁定的自定义 Default，若无则加载出厂默认
+  function initPageData() {
+    const savedCustomDefault = localStorage.getItem('VOLTZ_CUSTOM_DEFAULT_DATA');
+    if (savedCustomDefault) {
+      try {
+        const parsed = JSON.parse(savedCustomDefault);
+        applyDataGroup(parsed);
+        return;
+      } catch (e) {
+        console.error("加载自定义默认失败，回退到出厂设置", e);
+      }
+    }
+    applyDataGroup(FACTORY_DEFAULTS);
+  }
+
   function exportCSV() {
-    const multiplier = (parseFloat(document.getElementById('priceMultiplier').value) || 0) / 100;
+    const multiplier = (parseFloat(priceMultiplierInput.value) || 0) / 100;
     let csv = "Index,Item,Type,MSRP,Multiplier,AdjustedPrice_Ceil5,ActualDiscountPct\n";
 
     rawCatalogData.forEach((row, idx) => {
@@ -1194,166 +1495,29 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
     document.body.removeChild(link);
   }
 
-  // ================= TAB 3 逻辑 =================
-  const agentCommRateInput = document.getElementById('agentCommRate');
-  const agentCommRateSlider = document.getElementById('agentCommRateSlider');
-  const agentCommRateVal = document.getElementById('agentCommRateVal');
+  function copyQuote() {
+    const { otherCost, currentCogs, currentTotalBase } = getDynamicCostStructure();
+    const custPrice = parseFloat(custPriceInput.value) || 0;
+    const rebateRateOnPurchase = parseFloat(rebateRateInput.value) || 0;
+    const rebateFactor = parseFloat(rebateFactorInput.value) || 0;
+    const effectiveRebateOnPurchase = rebateRateOnPurchase * (rebateFactor / 100);
+    const compoundRebateMsrp = (custPrice * (effectiveRebateOnPurchase / 100)).toFixed(2);
+    const finalMargin = (custPrice - compoundRebateMsrp - currentTotalBase).toFixed(2);
 
-  const selfCommRateInput = document.getElementById('selfCommRate');
-  const selfCommRateSlider = document.getElementById('selfCommRateSlider');
-  const selfCommRateVal = document.getElementById('selfCommRateVal');
+    const text = 
+`【Voltz Toys 批发商务结构报价 - REV ${CURRENT_REV}】
+1. 客户买入价格: ${custPrice}% of MSRP
+2. 基础返点比率: ${rebateRateOnPurchase}% of Purchase Price (占采购价)
+3. 返点折算系数: ${rebateFactor}%
 
-  const customRebateRateInput = document.getElementById('customRebateRate');
-  const customRebateRateSlider = document.getElementById('customRebateRateSlider');
-  const customRebateRateVal = document.getElementById('customRebateRateVal');
+• 扣除复合返点: ${compoundRebateMsrp}% of MSRP
+• 落地成本 COGS: ${currentCogs.toFixed(2)}% of MSRP (采购 35% + 海运 9% + 关税 2.8% + 其他 ${otherCost.toFixed(1)}%)
+• 综合基准总成本: ${currentTotalBase.toFixed(2)}% of MSRP (含固定费用 10.0%)
+--------------------------------------------
+★ Voltz Toys 最终净利率: ${finalMargin}% of MSRP
+★ 返点占客户买入价比例: ${rebateRateOnPurchase.toFixed(2)}%`;
 
-  const evalWholesaleRateInput = document.getElementById('evalWholesaleRate');
-  const evalWholesaleRateSlider = document.getElementById('evalWholesaleRateSlider');
-  const evalWholesaleRateVal = document.getElementById('evalWholesaleRateVal');
-
-  const selfPurchaseVolInput = document.getElementById('selfPurchaseVol');
-  const otherWholesaleVolInput = document.getElementById('otherWholesaleVol');
-
-  function syncEval(src, target) {
-    target.value = src.value;
-    calculateSalesEval();
-  }
-
-  agentCommRateInput.addEventListener('input', () => syncEval(agentCommRateInput, agentCommRateSlider));
-  agentCommRateSlider.addEventListener('input', () => syncEval(agentCommRateSlider, agentCommRateInput));
-
-  selfCommRateInput.addEventListener('input', () => syncEval(selfCommRateInput, selfCommRateSlider));
-  selfCommRateSlider.addEventListener('input', () => syncEval(selfCommRateSlider, selfCommRateInput));
-
-  customRebateRateInput.addEventListener('input', () => syncEval(customRebateRateInput, customRebateRateSlider));
-  customRebateRateSlider.addEventListener('input', () => syncCalc(customRebateRateSlider, customRebateRateInput));
-
-  evalWholesaleRateInput.addEventListener('input', () => syncEval(evalWholesaleRateInput, evalWholesaleRateSlider));
-  evalWholesaleRateSlider.addEventListener('input', () => syncEval(evalWholesaleRateSlider, evalWholesaleRateInput));
-
-  selfPurchaseVolInput.addEventListener('input', calculateSalesEval);
-  otherWholesaleVolInput.addEventListener('input', calculateSalesEval);
-
-  function calculateSalesEval() {
-    const { currentCogs } = getDynamicCostStructure();
-    const cogsRatio = currentCogs / 100;
-
-    const agentCommPct = (parseFloat(agentCommRateInput.value) || 0) / 100;
-    const selfCommPct = (parseFloat(selfCommRateInput.value) || 0) / 100;
-    const customRebatePct = (parseFloat(customRebateRateInput.value) || 0) / 100;
-    const wholesalePriceRatio = (parseFloat(evalWholesaleRateInput.value) || 75) / 100;
-    const selfVol = parseFloat(selfPurchaseVolInput.value) || 0;
-    const otherVol = parseFloat(otherWholesaleVolInput.value) || 0;
-
-    agentCommRateVal.textContent = (agentCommPct * 100).toFixed(1) + '%';
-    selfCommRateVal.textContent = (selfCommPct * 100).toFixed(1) + '%';
-    customRebateRateVal.textContent = (customRebatePct * 100).toFixed(1) + '%';
-    evalWholesaleRateVal.textContent = (wholesalePriceRatio * 100).toFixed(1) + '%';
-
-    // 毛利率计算 (批发价 - 落地COGS) / 批发价
-    const grossMarginOnWholesale = wholesalePriceRatio > cogsRatio 
-      ? (wholesalePriceRatio - cogsRatio) / wholesalePriceRatio 
-      : 0;
-
-    document.getElementById('grossMarginNote').textContent = 
-      `毛利率：${(grossMarginOnWholesale*100).toFixed(2)}% [(${(wholesalePriceRatio*100).toFixed(1)}% - ${currentCogs.toFixed(1)}% COGS) ÷ ${(wholesalePriceRatio*100).toFixed(1)}%]`;
-
-    // 1. 其他客人的批发提成
-    const otherGrossProfit = otherVol * grossMarginOnWholesale;
-    const commFromOther = otherGrossProfit * agentCommPct;
-
-    // 2. 自己的批发提成
-    const selfGrossProfit = selfVol * grossMarginOnWholesale;
-    const commFromSelf = selfGrossProfit * selfCommPct;
-
-    // 3. 自己的批发退点
-    const selfRebateAmount = selfVol * customRebatePct;
-
-    // 4. 自己进货能卖出去的毛利 (按照能用 100% MSRP 全价售出)
-    let retailGrossProfit = 0;
-    let selfMsrpTotal = 0;
-    if (wholesalePriceRatio > 0) {
-      selfMsrpTotal = selfVol / wholesalePriceRatio;
-      retailGrossProfit = Math.max(0, selfMsrpTotal - selfVol);
-    }
-
-    // 整体能赚的钱 (4部分之和)
-    const grandTotalEarnings = commFromOther + commFromSelf + selfRebateAmount + retailGrossProfit;
-
-    // 批发端所得总收益 (前3项之和)
-    const wholesaleEarnings = commFromOther + commFromSelf + selfRebateAmount;
-
-    // 业务员自采合计提成比例 = (自采提成 + 退点) / 自己的总采购额
-    let combinedSelfRate = 0;
-    if (selfVol > 0) {
-      combinedSelfRate = ((commFromSelf + selfRebateAmount) / selfVol) * 100;
-    }
-
-    // 公司端纯利润核算
-    const totalWholesaleVol = selfVol + otherVol;
-    const totalGrossProfitPool = otherGrossProfit + selfGrossProfit;
-    const totalCommission = commFromOther + commFromSelf;
-    const fixedOverheadAmount = wholesalePriceRatio > 0 ? (totalWholesaleVol / wholesalePriceRatio) * 0.10 : 0;
-    const companyNetProfit = totalGrossProfitPool - totalCommission - selfRebateAmount - fixedOverheadAmount;
-
-    // ====== 重点更新：分母调整为 MSRP 零售总额基数 ======
-    let companyNetMarginMsrpPct = 0;
-    let totalMsrpVolume = 0;
-    if (wholesalePriceRatio > 0) {
-      totalMsrpVolume = totalWholesaleVol / wholesalePriceRatio;
-      if (totalMsrpVolume > 0) {
-        companyNetMarginMsrpPct = (companyNetProfit / totalMsrpVolume) * 100;
-      }
-    }
-
-    // 渲染 KPI 指标
-    document.getElementById('totalPersonalIncome').textContent = `$${grandTotalEarnings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('combinedSelfRate').textContent = `${combinedSelfRate.toFixed(2)}%`;
-    document.getElementById('wholesaleEarningSubtotal').textContent = `$${wholesaleEarnings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-
-    const netEl = document.getElementById('companyNetProfit');
-    netEl.textContent = `$${companyNetProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    netEl.style.color = companyNetProfit < 0 ? 'var(--danger)' : 'var(--success)';
-    
-    // UI 文字标明分母为 MSRP
-    document.getElementById('companyNetPct').textContent = `占 MSRP 净利润率: ${companyNetMarginMsrpPct.toFixed(2)}%`;
-
-    // 渲染 4 维收益拆解看板
-    document.getElementById('quadPart1').textContent = `$${commFromOther.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('quadPart1Sub').textContent = `外部毛利 $${otherGrossProfit.toFixed(2)} × ${(agentCommPct*100).toFixed(1)}%`;
-
-    document.getElementById('quadPart2').textContent = `$${commFromSelf.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('quadPart2Sub').textContent = `自采毛利 $${selfGrossProfit.toFixed(2)} × ${(selfCommPct*100).toFixed(1)}%`;
-
-    document.getElementById('quadPart3').textContent = `$${selfRebateAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('quadPart3Sub').textContent = `自采 $${selfVol.toLocaleString()} × ${(customRebatePct*100).toFixed(1)}% 退点`;
-
-    document.getElementById('quadPart4').textContent = `$${retailGrossProfit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('quadPart4Sub').textContent = `MSRP总额 $${selfMsrpTotal.toFixed(2)} − 采购成本 $${selfVol.toFixed(2)}`;
-
-    // 账目明细清单
-    document.getElementById('bkTotalWholesaleVol').textContent = `$${totalWholesaleVol.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('bkTotalMsrpVol').textContent = `$${totalMsrpVolume.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-    document.getElementById('bkGrossProfitPool').textContent = `$${totalGrossProfitPool.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (综合毛利率: ${(grossMarginOnWholesale*100).toFixed(2)}%)`;
-    document.getElementById('bkOtherDetail').textContent = `$${otherGrossProfit.toFixed(2)} (提成 @${(agentCommPct*100).toFixed(1)}%: $${commFromOther.toFixed(2)})`;
-    document.getElementById('bkSelfDetail').textContent = `$${selfGrossProfit.toFixed(2)} (提成 @${(selfCommPct*100).toFixed(1)}%: $${commFromSelf.toFixed(2)})`;
-    document.getElementById('bkRebateDetail').textContent = `-$${selfRebateAmount.toFixed(2)} (按输入的 ${(customRebatePct*100).toFixed(1)}% 计算)`;
-    document.getElementById('bkFixedOverheadDetail').textContent = `-$${fixedOverheadAmount.toFixed(2)} (占出货额: ${((0.10/wholesalePriceRatio)*100).toFixed(2)}%)`;
-    document.getElementById('bkFinalCompanyMargin').textContent = `$${companyNetProfit.toFixed(2)} (占 MSRP: ${companyNetMarginMsrpPct.toFixed(2)}%)`;
-  }
-
-  function resetEvalDefaults() {
-    agentCommRateInput.value = 15;
-    agentCommRateSlider.value = 15;
-    selfCommRateInput.value = 10;
-    selfCommRateSlider.value = 10;
-    customRebateRateInput.value = 5.0;
-    customRebateRateSlider.value = 5.0;
-    evalWholesaleRateInput.value = 75;
-    evalWholesaleRateSlider.value = 75;
-    selfPurchaseVolInput.value = 15000;
-    otherWholesaleVolInput.value = 50000;
-    calculateSalesEval();
+    navigator.clipboard.writeText(text).then(() => alert('报价方案已成功复制到剪贴板！'));
   }
 
   function copySalesEval() {
@@ -1391,9 +1555,8 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 13, Minute 50)
     navigator.clipboard.writeText(text).then(() => alert('测评报告已成功复制到剪贴板！'));
   }
 
-  recalculate();
-  renderTable();
-  calculateSalesEval();
+  // 初始化执行
+  initPageData();
 </script>
 
 </body>
