@@ -34,7 +34,7 @@
     }
 
     .wrapper {
-      max-width: 1080px;
+      max-width: 1100px;
       width: 100%;
       background: var(--card-bg);
       border: 1px solid var(--border);
@@ -245,8 +245,8 @@
 
     .results-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.85rem;
       margin-top: 1.5rem;
     }
 
@@ -254,7 +254,7 @@
       background: rgba(15, 23, 42, 0.8);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 1.25rem;
+      padding: 1.15rem;
       position: relative;
       overflow: hidden;
       transition: all 0.25s ease;
@@ -270,12 +270,12 @@
     .kpi-card.margin::before { background: var(--success); }
     .kpi-card.rebate::before { background: var(--accent); }
     .kpi-card.comm-agent::before { background: var(--primary); }
-    .kpi-card.comm-self::before { background: var(--indigo); }
+    .kpi-card.comm-converted::before { background: #38bdf8; }
     .kpi-card.income::before { background: var(--emerald); }
     .kpi-card.highlight::before { background: #f43f5e; }
 
     .kpi-title {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
@@ -284,15 +284,15 @@
     }
 
     .kpi-value {
-      font-size: 1.7rem;
+      font-size: 1.6rem;
       font-weight: 800;
     }
 
     .kpi-subtext {
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       color: var(--text-muted);
       margin-top: 0.4rem;
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     .breakdown-box {
@@ -491,7 +491,6 @@
       gap: 0.5rem;
     }
 
-    /* 现代开关 Toggle Switch 样式 */
     .toggle-container {
       display: inline-flex;
       align-items: center;
@@ -576,7 +575,7 @@
     <div class="header-left">
       <div class="header-title-row">
         <h1>Voltz Toys 批发与综合测评系统</h1>
-        <span class="rev-badge">REV: 2609251255</span>
+        <span class="rev-badge">REV: 2609251552</span>
       </div>
       <p>Wholesale Pricing, Catalog & Dual-Role Sales Commission System</p>
     </div>
@@ -778,11 +777,9 @@
   <!-- TAB 3: 业务员兼零售商测评系统 -->
   <div id="salesEvalTab" class="tab-content active">
     <div class="eval-section">
-      <!-- 带有开关 Toggle 的标题栏 -->
       <div class="eval-section-header">
         <div class="eval-section-title">⚙️ 提成与退点比例设定（独立输入）</div>
         
-        <!-- Toggle: 隐藏公司利润部分 -->
         <label class="toggle-container" title="开启后将隐藏所有涉及公司利润留存的卡片及底表明细">
           <input type="checkbox" id="hideProfitToggle" style="display: none;" onchange="handleToggleProfitVisibility()">
           <span class="toggle-switch"></span>
@@ -873,24 +870,31 @@
       </div>
     </div>
 
-    <!-- 顶部重点指标卡片 -->
+    <!-- 顶部重点指标卡片（已新增“折算批发提成比例”） -->
     <div class="results-grid">
       <div class="kpi-card income">
-        <div class="kpi-title">该业务员整体能赚的钱 (4部分合计)</div>
+        <div class="kpi-title">业务员整体能赚的钱 (4部分)</div>
         <div class="kpi-value" id="totalPersonalIncome" style="color: var(--emerald);">$0.00</div>
-        <div class="kpi-subtext">外部提成 + 自采提成 + 批发退点 + 自采按MSRP售出毛利</div>
+        <div class="kpi-subtext">外部提成 + 自采提成 + 退点 + 自售毛利</div>
+      </div>
+
+      <!-- 新增重点：Converted 批发提成比例 -->
+      <div class="kpi-card comm-converted">
+        <div class="kpi-title">折算批发提成比例 (Converted)</div>
+        <div class="kpi-value" id="convertedWholesaleRate" style="color: #38bdf8;">0.00%</div>
+        <div class="kpi-subtext">(自采提成 + 外部提成) ÷ 外部销售额</div>
       </div>
 
       <div class="kpi-card highlight">
         <div class="kpi-title">业务员自采合计提成比例</div>
         <div class="kpi-value" id="combinedSelfRate" style="color: #f43f5e;">0.00%</div>
-        <div class="kpi-subtext">(自采进货提成 + 批发退点) ÷ 自采总进货额</div>
+        <div class="kpi-subtext">(自采提成 + 批发退点) ÷ 自采进货额</div>
       </div>
 
       <div class="kpi-card comm-agent">
         <div class="kpi-title">批发端渠道所得总收益</div>
-        <div class="kpi-value" id="wholesaleEarningSubtotal" style="color: var(--primary);">$0.00</div>
-        <div class="kpi-subtext">外部代理提成 + 自采提成 + 采购退点</div>
+        <div class="kpi-value" id="wholesaleEarningSubtotal" style="color: #cbd5e1;">$0.00</div>
+        <div class="kpi-subtext">外部提成 + 自采提成 + 采购退点</div>
       </div>
 
       <!-- 公司净利润留存 (可被 Toggle 隐藏) -->
@@ -901,7 +905,7 @@
       </div>
     </div>
 
-    <!-- 4维看板（对外展示重点） -->
+    <!-- 4维看板 -->
     <div class="eval-section" style="margin-top: 1.5rem; background: rgba(15, 23, 42, 0.4);">
       <div class="eval-section-title" style="color: #fff;">
         💰 业务员整体总收益透视拆解（4 维资金来源看板）
@@ -958,6 +962,10 @@
         <span>• 自采零售订单贡献毛利 及 提成：</span>
         <span id="bkSelfDetail">$0.00 (提成: $0.00)</span>
       </div>
+      <div class="breakdown-row" style="color: #38bdf8;">
+        <span>• 双项提成合计 (自采提成 + 外部提成)：</span>
+        <span id="bkTotalCommSum">$0.00</span>
+      </div>
       <div class="breakdown-row" style="color: var(--accent);">
         <span>• 自身作为零售商享有的退点支出 (基于输入比例)：</span>
         <span id="bkRebateDetail">-$0.00</span>
@@ -981,7 +989,7 @@
   <!-- 底部修订版本管理栏 -->
   <div class="footer-rev-bar">
     <div>
-      当前系统构建版本：<code>REV: 2609251255</code> (YYMMDDHHMM)
+      当前系统构建版本：<code>REV: 2609251552</code> (YYMMDDHHMM)
     </div>
     <div>
       <button class="btn" onclick="downloadRevHistory()">📥 下载修订历史 (Rev History .txt)</button>
@@ -991,7 +999,7 @@
 
 <script>
   // 系统构建版本号
-  const CURRENT_REV = "2609251255";
+  const CURRENT_REV = "2609251552";
 
   // 管理员安全设置密码
   const ADMIN_PASSWORD = "voltz888";
@@ -1016,26 +1024,22 @@
 `================================================================================
 VOLTZ TOYS WHOLESALE PRICING & EVALUATION SYSTEM - REVISION HISTORY
 Current Version: REV ${CURRENT_REV}
-Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
+Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 15, Minute 52)
 ================================================================================
+
+[REV: 2609251552] - 2026-09-25 15:52
+- TAB 3 考核指标增强：
+  新增 KPI 卡片：“折算批发提成比例 (Converted Wholesale Comm Rate)”
+  计算公式：(自采进货提成 + 外部代理提成) ÷ 外部代理销售额。
+  直观体现将自采提成补贴并入外部业务后的实际折算佣金率。
 
 [REV: 2609251255] - 2026-09-25 12:55
 - TAB 3 隐私与风控升级：
-  在 TAB 3 标题栏右上角新增“隐藏公司利润面板 (Hide Company Profit)”滑动 Toggle 开关。
-  开启后，界面自动隐藏“公司最终净留存利润”KPI 卡片及底部的“综合财务收益与成本穿透清单”，且复制报价报告时自动隐去公司利润底牌，方便直接面向业务员沟通对账。
+  新增“隐藏公司利润面板 (Hide Company Profit)”滑动 Toggle 开关，开启后隐藏“公司最终净留存利润”卡片与穿透清单。
 
 [REV: 2609231430] - 2026-09-23 14:30
 - 新增功能：数据组导入与导出 (JSON 格式)，支持整套参数保存与回填。
-- 新增密码保护存储按键：添加“设为默认 (需密码)”按键 (默认密码: voltz888)，可将当前填写的整套数据持久化保存为浏览器首选 Default。
-
-[REV: 2609231350] - 2026-09-23 13:50
-- TAB 3 计算分母对齐：
-  “公司扣除双项提成、退点与固定分摊后的纯利润百分比”计算分母调整为 MSRP 零售总额基数（总出货额 ÷ 批发折扣率）。
-
-[REV: 2609231310] - 2026-09-23 13:10
-- TAB 3 功能升级：
-  1. 新增指标：该业务员自采合计提成比例 = (自采提成 + 自采退点) ÷ 自采总进货额。
-  2. 新增看板：该业务员整体能赚的钱完整拆解为 4 维收益看板。
+- 新增密码保护存储按键：添加“设为默认 (需密码)”按键 (默认密码: voltz888)。
 ================================================================================`;
 
   function downloadRevHistory() {
@@ -1186,7 +1190,6 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
   const selfPurchaseVolInput = document.getElementById('selfPurchaseVol');
   const otherWholesaleVolInput = document.getElementById('otherWholesaleVol');
 
-  // 新增：隐藏公司利润 Toggle 开关引用
   const hideProfitToggle = document.getElementById('hideProfitToggle');
   const companyProfitCard = document.getElementById('companyProfitCard');
   const companyProfitBreakdown = document.getElementById('companyProfitBreakdown');
@@ -1354,14 +1357,18 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
     document.getElementById('grossMarginNote').textContent = 
       `毛利率：${(grossMarginOnWholesale*100).toFixed(2)}% [(${(wholesalePriceRatio*100).toFixed(1)}% - ${currentCogs.toFixed(1)}% COGS) ÷ ${(wholesalePriceRatio*100).toFixed(1)}%]`;
 
+    // 1. 其他客人的批发提成
     const otherGrossProfit = otherVol * grossMarginOnWholesale;
     const commFromOther = otherGrossProfit * agentCommPct;
 
+    // 2. 自己的批发提成
     const selfGrossProfit = selfVol * grossMarginOnWholesale;
     const commFromSelf = selfGrossProfit * selfCommPct;
 
+    // 3. 自己的批发退点
     const selfRebateAmount = selfVol * customRebatePct;
 
+    // 4. 自己进货能卖出去的毛利 (按照能用 100% MSRP 全价售出)
     let retailGrossProfit = 0;
     let selfMsrpTotal = 0;
     if (wholesalePriceRatio > 0) {
@@ -1372,9 +1379,18 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
     const grandTotalEarnings = commFromOther + commFromSelf + selfRebateAmount + retailGrossProfit;
     const wholesaleEarnings = commFromOther + commFromSelf + selfRebateAmount;
 
+    // 业务员自采合计提成比例 = (自采提成 + 退点) / 自己的总采购额
     let combinedSelfRate = 0;
     if (selfVol > 0) {
       combinedSelfRate = ((commFromSelf + selfRebateAmount) / selfVol) * 100;
+    }
+
+    // ====== 新增核心指标：Converted 批发提成比例 ======
+    // 公式: (自采提成 + 外部提成) / 外部销售额
+    let convertedWholesaleRate = 0;
+    const totalCommissionsCombined = commFromSelf + commFromOther;
+    if (otherVol > 0) {
+      convertedWholesaleRate = (totalCommissionsCombined / otherVol) * 100;
     }
 
     const totalWholesaleVol = selfVol + otherVol;
@@ -1393,6 +1409,7 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
     }
 
     document.getElementById('totalPersonalIncome').textContent = `$${grandTotalEarnings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('convertedWholesaleRate').textContent = `${convertedWholesaleRate.toFixed(2)}%`;
     document.getElementById('combinedSelfRate').textContent = `${combinedSelfRate.toFixed(2)}%`;
     document.getElementById('wholesaleEarningSubtotal').textContent = `$${wholesaleEarnings.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
@@ -1419,12 +1436,11 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
     document.getElementById('bkGrossProfitPool').textContent = `$${totalGrossProfitPool.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (综合毛利率: ${(grossMarginOnWholesale*100).toFixed(2)}%)`;
     document.getElementById('bkOtherDetail').textContent = `$${otherGrossProfit.toFixed(2)} (提成 @${(agentCommPct*100).toFixed(1)}%: $${commFromOther.toFixed(2)})`;
     document.getElementById('bkSelfDetail').textContent = `$${selfGrossProfit.toFixed(2)} (提成 @${(selfCommPct*100).toFixed(1)}%: $${commFromSelf.toFixed(2)})`;
+    document.getElementById('bkTotalCommSum').textContent = `$${totalCommissionsCombined.toFixed(2)} (折合占外部销售额: ${convertedWholesaleRate.toFixed(2)}%)`;
     document.getElementById('bkRebateDetail').textContent = `-$${selfRebateAmount.toFixed(2)} (按输入的 ${(customRebatePct*100).toFixed(1)}% 计算)`;
     document.getElementById('bkFixedOverheadDetail').textContent = `-$${fixedOverheadAmount.toFixed(2)} (占出货额: ${((0.10/wholesalePriceRatio)*100).toFixed(2)}%)`;
     document.getElementById('bkFinalCompanyMargin').textContent = `$${companyNetProfit.toFixed(2)} (占 MSRP: ${companyNetMarginMsrpPct.toFixed(2)}%)`;
   }
-
-  // ================= 数据组导出、导入与持久化默认值功能 =================
 
   function getCurrentDataGroup() {
     return {
@@ -1533,7 +1549,7 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
     if (pwd === ADMIN_PASSWORD) {
       const currentData = getCurrentDataGroup();
       localStorage.setItem('VOLTZ_CUSTOM_DEFAULT_DATA', JSON.stringify(currentData));
-      alert("✅ 授权成功！当前现行数据组（含公司利润隐藏设置）已成功保存为系统新默认值。\n下次刷新或重新打开本页面时，将自动以该套数据启动。");
+      alert("✅ 授权成功！当前现行数据组（含折算提成比例与隐私设置）已成功保存为系统新默认值。\n下次打开本页面时，将自动以此套参数启动。");
     } else {
       alert("❌ 密码错误！您无权更改系统默认配置。");
     }
@@ -1616,6 +1632,7 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
     const otherVol = parseFloat(otherWholesaleVolInput.value) || 0;
 
     const totalGrand = document.getElementById('totalPersonalIncome').textContent;
+    const convertedRate = document.getElementById('convertedWholesaleRate').textContent;
     const combinedPct = document.getElementById('combinedSelfRate').textContent;
     const p1 = document.getElementById('quadPart1').textContent;
     const p2 = document.getElementById('quadPart2').textContent;
@@ -1628,6 +1645,7 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
 • 销售代理提成率: ${agentRate}% (占毛利) | 自采进货提成率: ${selfRate}% (占毛利) | 自采退点率: ${rebateRate}%
 • 零售自采进货额: $${selfVol.toLocaleString()} | 外部批发业绩: $${otherVol.toLocaleString()}
 --------------------------------------------
+★ 折算批发提成比例 (自采+外部提成 ÷ 外部业绩): ${convertedRate}
 ★ 该业务员自采合计提成比例: ${combinedPct}
 ★ 该业务员整体能赚的钱 (4维合计): ${totalGrand}
    ① 其他客人的批发提成: ${p1}
@@ -1642,7 +1660,6 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
     navigator.clipboard.writeText(text).then(() => alert('测评报告已成功复制到剪贴板！'));
   }
 
-  // 初始化执行
   initPageData();
 </script>
 
