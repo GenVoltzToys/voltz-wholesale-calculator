@@ -93,7 +93,6 @@
       margin-top: 0.2rem;
     }
 
-    /* 顶部操作区（导入、导出与设为默认） */
     .header-actions {
       display: flex;
       align-items: center;
@@ -258,6 +257,7 @@
       padding: 1.25rem;
       position: relative;
       overflow: hidden;
+      transition: all 0.25s ease;
     }
 
     .kpi-card::before {
@@ -306,6 +306,7 @@
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
+      transition: all 0.25s ease;
     }
 
     .breakdown-row {
@@ -472,14 +473,71 @@
       margin-bottom: 1.25rem;
     }
 
+    .eval-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
     .eval-section-title {
       font-size: 0.95rem;
       font-weight: 700;
       color: var(--primary);
-      margin-bottom: 1rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
+    }
+
+    /* 现代开关 Toggle Switch 样式 */
+    .toggle-container {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: #0f172a;
+      padding: 0.3rem 0.65rem;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      user-select: none;
+      cursor: pointer;
+    }
+
+    .toggle-switch {
+      position: relative;
+      width: 38px;
+      height: 20px;
+      background-color: #475569;
+      border-radius: 20px;
+      transition: background-color 0.2s ease;
+      display: inline-block;
+    }
+
+    .toggle-switch::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background-color: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s ease;
+    }
+
+    input[type="checkbox"]:checked + .toggle-switch {
+      background-color: #f43f5e;
+    }
+
+    input[type="checkbox"]:checked + .toggle-switch::after {
+      transform: translateX(18px);
+    }
+
+    .toggle-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #cbd5e1;
     }
 
     .eval-grid {
@@ -518,7 +576,7 @@
     <div class="header-left">
       <div class="header-title-row">
         <h1>Voltz Toys 批发与综合测评系统</h1>
-        <span class="rev-badge">REV: 2609231430</span>
+        <span class="rev-badge">REV: 2609251255</span>
       </div>
       <p>Wholesale Pricing, Catalog & Dual-Role Sales Commission System</p>
     </div>
@@ -539,14 +597,14 @@
 
     <!-- 导航选项卡 -->
     <div class="nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('calcTab', this)">批发利润测算</button>
+      <button class="tab-btn" onclick="switchTab('calcTab', this)">批发利润测算</button>
       <button class="tab-btn" onclick="switchTab('catalogTab', this)">现行价格表 (67款)</button>
-      <button class="tab-btn" onclick="switchTab('salesEvalTab', this)">业务员兼零售测评 ⭐</button>
+      <button class="tab-btn active" onclick="switchTab('salesEvalTab', this)">业务员兼零售测评 ⭐</button>
     </div>
   </div>
 
   <!-- TAB 1: 批发利润测算器 -->
-  <div id="calcTab" class="tab-content active">
+  <div id="calcTab" class="tab-content">
     <div class="cost-ledger">
       <div class="ledger-item">
         <span class="label">采购成本</span>
@@ -718,9 +776,19 @@
   </div>
 
   <!-- TAB 3: 业务员兼零售商测评系统 -->
-  <div id="salesEvalTab" class="tab-content">
+  <div id="salesEvalTab" class="tab-content active">
     <div class="eval-section">
-      <div class="eval-section-title">⚙️ 提成与退点比例设定（独立输入）</div>
+      <!-- 带有开关 Toggle 的标题栏 -->
+      <div class="eval-section-header">
+        <div class="eval-section-title">⚙️ 提成与退点比例设定（独立输入）</div>
+        
+        <!-- Toggle: 隐藏公司利润部分 -->
+        <label class="toggle-container" title="开启后将隐藏所有涉及公司利润留存的卡片及底表明细">
+          <input type="checkbox" id="hideProfitToggle" style="display: none;" onchange="handleToggleProfitVisibility()">
+          <span class="toggle-switch"></span>
+          <span class="toggle-label" id="toggleLabelText">隐藏公司利润面板</span>
+        </label>
+      </div>
       
       <div class="eval-grid">
         <div class="field-group">
@@ -825,14 +893,15 @@
         <div class="kpi-subtext">外部代理提成 + 自采提成 + 采购退点</div>
       </div>
 
-      <div class="kpi-card margin">
+      <!-- 公司净利润留存 (可被 Toggle 隐藏) -->
+      <div class="kpi-card margin" id="companyProfitCard">
         <div class="kpi-title">公司最终净留存利润</div>
         <div class="kpi-value" id="companyNetProfit" style="color: var(--success);">$0.00</div>
         <div class="kpi-subtext" id="companyNetPct">以 MSRP 零售总额为分母</div>
       </div>
     </div>
 
-    <!-- 4维看板 -->
+    <!-- 4维看板（对外展示重点） -->
     <div class="eval-section" style="margin-top: 1.5rem; background: rgba(15, 23, 42, 0.4);">
       <div class="eval-section-title" style="color: #fff;">
         💰 业务员整体总收益透视拆解（4 维资金来源看板）
@@ -864,8 +933,8 @@
       </div>
     </div>
 
-    <!-- 详细财务清算明细账 -->
-    <div class="breakdown-box" style="margin-top: 1.25rem; font-size: 0.85rem;">
+    <!-- 详细财务清算明细账 (可被 Toggle 隐藏) -->
+    <div class="breakdown-box" id="companyProfitBreakdown" style="margin-top: 1.25rem; font-size: 0.85rem;">
       <div style="font-weight: 700; color: #fff; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; margin-bottom: 0.3rem;">
         📊 综合财务收益与成本穿透清单 (毛利口径包含固定成本分摊)
       </div>
@@ -912,7 +981,7 @@
   <!-- 底部修订版本管理栏 -->
   <div class="footer-rev-bar">
     <div>
-      当前系统构建版本：<code>REV: 2609231430</code> (YYMMDDHHMM)
+      当前系统构建版本：<code>REV: 2609251255</code> (YYMMDDHHMM)
     </div>
     <div>
       <button class="btn" onclick="downloadRevHistory()">📥 下载修订历史 (Rev History .txt)</button>
@@ -922,9 +991,9 @@
 
 <script>
   // 系统构建版本号
-  const CURRENT_REV = "2609231430";
+  const CURRENT_REV = "2609251255";
 
-  // 管理员安全设置密码（如需修改在此更改）
+  // 管理员安全设置密码
   const ADMIN_PASSWORD = "voltz888";
 
   // 出厂系统初始默认数据组
@@ -939,20 +1008,25 @@
     customRebateRate: 5.0,
     evalWholesaleRate: 75.0,
     selfPurchaseVol: 15000,
-    otherWholesaleVol: 50000
+    otherWholesaleVol: 50000,
+    hideProfit: false
   };
 
   const REV_HISTORY_TEXT = 
 `================================================================================
 VOLTZ TOYS WHOLESALE PRICING & EVALUATION SYSTEM - REVISION HISTORY
 Current Version: REV ${CURRENT_REV}
-Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
+Format: YYMMDDHHMM (Year 26, Month 09, Day 25, Hour 12, Minute 55)
 ================================================================================
+
+[REV: 2609251255] - 2026-09-25 12:55
+- TAB 3 隐私与风控升级：
+  在 TAB 3 标题栏右上角新增“隐藏公司利润面板 (Hide Company Profit)”滑动 Toggle 开关。
+  开启后，界面自动隐藏“公司最终净留存利润”KPI 卡片及底部的“综合财务收益与成本穿透清单”，且复制报价报告时自动隐去公司利润底牌，方便直接面向业务员沟通对账。
 
 [REV: 2609231430] - 2026-09-23 14:30
 - 新增功能：数据组导入与导出 (JSON 格式)，支持整套参数保存与回填。
 - 新增密码保护存储按键：添加“设为默认 (需密码)”按键 (默认密码: voltz888)，可将当前填写的整套数据持久化保存为浏览器首选 Default。
-- 完善重置机制：提供“恢复系统默认值”快速还原出厂配置。
 
 [REV: 2609231350] - 2026-09-23 13:50
 - TAB 3 计算分母对齐：
@@ -962,12 +1036,6 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
 - TAB 3 功能升级：
   1. 新增指标：该业务员自采合计提成比例 = (自采提成 + 自采退点) ÷ 自采总进货额。
   2. 新增看板：该业务员整体能赚的钱完整拆解为 4 维收益看板。
-
-[REV: 2609221744] - 2026-09-22 17:44
-- UI展示更新：在系统主界面标题与底部增加 REV: 2609221744 标识。
-- 新增功能：添加可下载的文本修订历史 (Rev History .txt) 导出功能。
-- 海运与成本更新：海运费更新为 9.0%，关税保持 2.8%，采购成本 35.0%。
-- 新增“其他费用”输入参数：支持以 MSRP % 形式计入落地成本 (COGS = 35% + 9% + 2.8% + 其他%)。
 ================================================================================`;
 
   function downloadRevHistory() {
@@ -1118,7 +1186,27 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
   const selfPurchaseVolInput = document.getElementById('selfPurchaseVol');
   const otherWholesaleVolInput = document.getElementById('otherWholesaleVol');
 
-  // 双向绑定同步
+  // 新增：隐藏公司利润 Toggle 开关引用
+  const hideProfitToggle = document.getElementById('hideProfitToggle');
+  const companyProfitCard = document.getElementById('companyProfitCard');
+  const companyProfitBreakdown = document.getElementById('companyProfitBreakdown');
+  const toggleLabelText = document.getElementById('toggleLabelText');
+
+  function handleToggleProfitVisibility() {
+    const isHidden = hideProfitToggle.checked;
+    if (isHidden) {
+      companyProfitCard.style.display = 'none';
+      companyProfitBreakdown.style.display = 'none';
+      toggleLabelText.textContent = "已隐藏公司利润 (点此显示)";
+      toggleLabelText.style.color = "#f43f5e";
+    } else {
+      companyProfitCard.style.display = 'block';
+      companyProfitBreakdown.style.display = 'flex';
+      toggleLabelText.textContent = "隐藏公司利润面板";
+      toggleLabelText.style.color = "#cbd5e1";
+    }
+  }
+
   function syncCalc(src, target) {
     target.value = src.value;
     recalculateAll();
@@ -1338,7 +1426,6 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
 
   // ================= 数据组导出、导入与持久化默认值功能 =================
 
-  // 获取当前 UI 全部参数为一个对象
   function getCurrentDataGroup() {
     return {
       otherCostRate: parseFloat(otherCostRateInput.value) || 0,
@@ -1352,12 +1439,12 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
       evalWholesaleRate: parseFloat(evalWholesaleRateInput.value) || 0,
       selfPurchaseVol: parseFloat(selfPurchaseVolInput.value) || 0,
       otherWholesaleVol: parseFloat(otherWholesaleVolInput.value) || 0,
+      hideProfit: hideProfitToggle.checked,
       exportedAt: new Date().toISOString(),
       revVersion: CURRENT_REV
     };
   }
 
-  // 将数据对象应用到所有 UI 控件中
   function applyDataGroup(data) {
     if (!data) return;
     if (data.otherCostRate !== undefined) {
@@ -1401,10 +1488,13 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
     if (data.otherWholesaleVol !== undefined) {
       otherWholesaleVolInput.value = data.otherWholesaleVol;
     }
+    if (data.hideProfit !== undefined) {
+      hideProfitToggle.checked = Boolean(data.hideProfit);
+      handleToggleProfitVisibility();
+    }
     recalculateAll();
   }
 
-  // 1. 导出数据组 (Export JSON)
   function exportDataGroup() {
     const data = getCurrentDataGroup();
     const jsonStr = JSON.stringify(data, null, 2);
@@ -1419,7 +1509,6 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
     URL.revokeObjectURL(url);
   }
 
-  // 2. 导入数据组 (Import JSON)
   function handleImportFile(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1432,26 +1521,24 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
       } catch (err) {
         alert('❌ 导入失败：无效的 JSON 数据文件格式！');
       }
-      event.target.value = ''; // 清空方便重复上传
+      event.target.value = '';
     };
     reader.readAsText(file);
   }
 
-  // 3. 密码保护存储按键：将现行数据组记录成系统默认 (Set as Default)
   function saveAsProtectedDefault() {
     const pwd = prompt("🔐 请输入管理员安全密码以锁定当前数据为默认配置：\n(默认初始密码：voltz888)");
-    if (pwd === null) return; // 用户取消
+    if (pwd === null) return;
 
     if (pwd === ADMIN_PASSWORD) {
       const currentData = getCurrentDataGroup();
       localStorage.setItem('VOLTZ_CUSTOM_DEFAULT_DATA', JSON.stringify(currentData));
-      alert("✅ 授权成功！当前现行数据组已成功保存为系统新默认值。\n下次刷新或重新打开本页面时，将自动以该套数据启动。");
+      alert("✅ 授权成功！当前现行数据组（含公司利润隐藏设置）已成功保存为系统新默认值。\n下次刷新或重新打开本页面时，将自动以该套数据启动。");
     } else {
       alert("❌ 密码错误！您无权更改系统默认配置。");
     }
   }
 
-  // 4. 恢复系统出厂默认值
   function resetToSystemDefault() {
     if (confirm("确认清除自定义默认值并恢复出厂初始设置吗？")) {
       localStorage.removeItem('VOLTZ_CUSTOM_DEFAULT_DATA');
@@ -1460,7 +1547,6 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
     }
   }
 
-  // 页面加载时的初始加载策略：优先加载用户锁定的自定义 Default，若无则加载出厂默认
   function initPageData() {
     const savedCustomDefault = localStorage.getItem('VOLTZ_CUSTOM_DEFAULT_DATA');
     if (savedCustomDefault) {
@@ -1521,6 +1607,7 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
   }
 
   function copySalesEval() {
+    const isHidden = hideProfitToggle.checked;
     const { currentCogs } = getDynamicCostStructure();
     const agentRate = agentCommRateInput.value;
     const selfRate = selfCommRateInput.value;
@@ -1535,12 +1622,10 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
     const p3 = document.getElementById('quadPart3').textContent;
     const p4 = document.getElementById('quadPart4').textContent;
     const compNet = document.getElementById('companyNetProfit').textContent;
-    const compPct = document.getElementById('companyNetPct').textContent;
 
-    const text = 
+    let text = 
 `【Voltz Toys 业务员兼零售商测评报告 - REV ${CURRENT_REV}】
-• 动态 COGS 扣减基准: ${currentCogs.toFixed(2)}% of MSRP
-• 代理提成率: ${agentRate}% | 自采提成率: ${selfRate}% | 退点率: ${rebateRate}%
+• 销售代理提成率: ${agentRate}% (占毛利) | 自采进货提成率: ${selfRate}% (占毛利) | 自采退点率: ${rebateRate}%
 • 零售自采进货额: $${selfVol.toLocaleString()} | 外部批发业绩: $${otherVol.toLocaleString()}
 --------------------------------------------
 ★ 该业务员自采合计提成比例: ${combinedPct}
@@ -1548,9 +1633,11 @@ Format: YYMMDDHHMM (Year 26, Month 09, Day 23, Hour 14, Minute 30)
    ① 其他客人的批发提成: ${p1}
    ② 自己的批发提成: ${p2}
    ③ 自己的批发退点: ${p3}
-   ④ 自采按 MSRP 售出的毛利: ${p4}
---------------------------------------------
-★ 公司年度纯利留存: ${compNet} (${compPct})`;
+   ④ 自采按 MSRP 售出的毛利: ${p4}`;
+
+    if (!isHidden) {
+      text += `\n--------------------------------------------\n★ 公司年度纯利留存: ${compNet}`;
+    }
 
     navigator.clipboard.writeText(text).then(() => alert('测评报告已成功复制到剪贴板！'));
   }
